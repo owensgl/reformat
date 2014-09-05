@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+#This only outputs biallelic sites and puts the major allele as reference.
 use warnings;
 use strict;
 use lib '/home/owens/bin'; #For GObox server
@@ -45,14 +46,8 @@ while (<POP>){
 }
 close POP;
 
-my @tmp = keys %poplist;
 
-if ($#tmp eq 2){
-	print STDERR "This is really only designed for 2 pops\tyou have $#tmp\n";
-}
 
-my $pop1 = $tmp[0];
-my $pop2 = $tmp[1];
 
 open (GENOFILE, "> $out.eigenstratgeno") or die "Could not open a file\n";
 open (SNPFILE, "> $out.snp") or die "Could not open a file\n";
@@ -66,17 +61,15 @@ while (<IN>){
   		foreach my $i ($badcolumns..$#a){ #Get sample names for each column
         		if ($pop{$a[$i]}){
         			$samplepop{$i} = $pop{$a[$i]};
-        			print LOCI "$a[$i]\tU\t$pop{$a[$i]}\n";
+        			print INDFILE "$a[$i]\tU\t$pop{$a[$i]}\n";
         		}
         	}
 
 	}else{
 		next if /^\s*$/;
-		my $snpname = $a[0]."-"."$a[1]\t$a[0]";
+		my $snpname = $a[0]."-"."$a[1]";
+		my $snpchrom = $a[0];
 		my $snppos = $a[1];
-		foreach my $i (1..($badcolumns-1)){
-			print "\t$a[$i]";
-		}
 		my %BC;
 		my %BS;
 		my %total_alleles;
@@ -113,21 +106,22 @@ while (<IN>){
 			my $b1 = $bases[1];
 			#Minor allele
 			my $b2 = $bases[0];
-			print SNPFILE "$snpname\t0\t\0.0\t$snppos\n"
+			print SNPFILE "$snpname\t$snpchrom\t0.0\t$snppos\n";
 			foreach my $i ($badcolumns..$#a){
 				if ($samplepop{$i}){
 					my @bases = split(//, $a[$i]);
 					if ($bases[0] eq "N"){
 						print GENOFILE "9";
-					}elsif (($bases[0] eq $b1) and ($bases[1] eq $b1){
+					}elsif (($bases[0] eq $b1) and ($bases[1] eq $b1)){
 						print GENOFILE "2";
-					}elsif (($bases[0] ne $b1) and ($bases[1] ne $b1){
+					}elsif (($bases[0] ne $b1) and ($bases[1] ne $b1)){
 						print GENOFILE "0";
 					}else {
 						print GENOFILE "1";
 					}
 				}
 			}
+			print GENOFILE "\n";
 		}
 	}
 }
