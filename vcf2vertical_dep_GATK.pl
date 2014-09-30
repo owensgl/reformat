@@ -10,10 +10,10 @@ my $max_dp =100000;
 
 #old VCF2VERTICAL had format from mpileup: GT:PL:DP:GQ
 #THIS VERSION:    has format from GATK-UG: GT:AD:DP:GQ:PL
-
+#GLO VERSION Sept2014: includes ./.:
 while(<STDIN>){
 	if(eof()){
-		print "\n";	
+		#print "\n";	
 	}
 	else{
 		my $line = "$_";
@@ -32,7 +32,7 @@ while(<STDIN>){
 			my $filter = shift @fields;
 			my $info =   shift @fields;
 			my $format = shift @fields;
-			my $mq = 0;
+			my $mq = "NA";
 			if($info=~m/MQ=(\d+)/){
 				$mq = "$1";	
 			}
