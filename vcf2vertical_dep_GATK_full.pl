@@ -41,7 +41,7 @@ while(<STDIN>){
 			}
 			my $meta = "$chrome\t$pos\t$id\t$ref\t$alt\t$qual\t$filter\t$info\t$format";
 			if($line=~m/^#/){
-				print "$chrome\t$pos";
+				print "CHROM\t$pos";
 				foreach(@fields){
 					my $long = "$_";
 					my $name = basename($long,'.bam');
