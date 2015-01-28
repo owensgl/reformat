@@ -57,13 +57,16 @@ while(<STDIN>){
 				if ($format eq "GT:DP"){
 					foreach(@fields){
 						my @genotype = split (/:/, $_);
-						if ($genotype[1] eq '.'){
-							print "\tNN";
-						}
-						elsif ($genotype[1] >= 5){
-							print "\t$ref$ref";
+						if ($genotype[1]){
+							if ($genotype[1] eq '.'){
+								print "\tNN";
+							}
+							elsif ($genotype[1] >= 5){
+								print "\t$ref$ref";
+							}else{				
+								print "\tNN";
+							}
 						}else{
-							
 							print "\tNN";
 						}
 					}
@@ -71,15 +74,19 @@ while(<STDIN>){
 				elsif ($format eq "GT:AD:DP"){
 					foreach(@fields){
                                                 my @genotype = split (/:/, $_);
-                                                if ($genotype[2] eq '.'){
-                                                        print "\tNN";
-                                                }
-                                                elsif ($genotype[2] >= 5){
-                                                        print "\t$ref$ref";
-                                                }else{
-                                                        print "\tNN";
+						if ($genotype[2]){
+	                                                if ($genotype[2] eq '.'){
+        	                                                print "\tNN";
+               	                                	}
+	                                                elsif ($genotype[2] >= 5){
+	                                                        print "\t$ref$ref";
+	                                                }else{
+	                                                        print "\tNN";
+							}
 
-                                                }
+                                                }else{
+							print "\tNN";
+						}
 					}
 				}
 				print "\n";
@@ -136,10 +143,12 @@ sub GT{
 	my $gq = $gtdata[3];
     #depth is 3rd:
   	my $dp = $gtdata[2];
-	if ($gq <= $min_gt_qual || $dp <= $min_dp || $dp > $max_dp  ){
+	if ($gq eq '.' || $dp eq '.' ){
+		return 'NN';
+	}	
+	elsif ($gq <= $min_gt_qual || $dp <= $min_dp || $dp > $max_dp  ){
 		return 'NN';	
-	}
-	else{
+	}else{
 		my $i =1;
 		my $n_match =0;
 		my %types = ( 1 => '00', 2 => '01', 3 => '11', 4 => '02', 5 => '12', 6 => '22', 7 => '03', 8 => '13', 9 => '23', 10 => '33');

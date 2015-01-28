@@ -13,7 +13,7 @@ open IN, "$in";
 while (<IN>){
 	chomp;
 	my @a = split (/\t/,$_);
-  	if ($a[0]=~/^contig/){
+  	if ($. == 1){
                 foreach my $i (2..$#a){
                         $samples{$i}=$a[$i];
                         push(@samples,$a[$i]);

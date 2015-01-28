@@ -84,13 +84,13 @@ foreach my $eachpop (sort keys %popList){
 	    chomp;
 	    my @a = split (/\t/,$_);
 	    if ($pop{$a[0]} eq $eachpop){
-	        print OUTFILE "$a[0],\t"; 
-            foreach my $i (1..$locicount){
-                print OUTFILE "$snp{$loci{$i}{$a[0]}{1}}";
-                print OUTFILE "$snp{$loci{$i}{$a[0]}{2}}\t";
+	    	print OUTFILE "$a[0],\t"; 
+	        foreach my $i (1..$locicount){
+                	print OUTFILE "$snp{$loci{$i}{$a[0]}{1}}";
+                	print OUTFILE "$snp{$loci{$i}{$a[0]}{2}}\t";
+            	}
+        	print OUTFILE "\n";
             }
-        print OUTFILE "\n";
-        }
     }
     close POP;
     print OUTFILE "\n";
