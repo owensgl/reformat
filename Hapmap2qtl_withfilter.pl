@@ -4,11 +4,24 @@
 #This script takes in a hapmap file, filters it for heterozygosity, minor allele frequency and coverage, then outputs in R/qtl format.
 
 #Use flags with input to specify  --Infile, --Outfile, --MaxHet, --MinHet, --MaxMaf, --MinMaf and --MinCov.
-
+#Use flag "--FixMinor True" to convert minor allele calls to heterozygote calls.
 
 use warnings;
 use strict;
 use Getopt::Long;
+use lib '/home/owens/bin/pop_gen/'; #For GObox server
+my %t;
+$t{"N"} = "NN";
+$t{"A"} = "AA";
+$t{"T"} = "TT";
+$t{"G"} = "GG";
+$t{"C"} = "CC";
+$t{"W"} = "TA";
+$t{"R"} = "AG";
+$t{"M"} = "AC";
+$t{"S"} = "CG";
+$t{"K"} = "TG";
+$t{"Y"} = "CT";
 
 my %args;
 
@@ -20,180 +33,111 @@ my $minhet = 0;
 my $maxmaf = 1;
 my $minmaf = 0;
 my $mincov = 0;
+my $fixminor = "false";
 
-GetOptions (	"Infile=s" => \$in,
+GetOptions("Infile=s" => \$in,
 		"Outfile=s" => \$out,
-		"MaxHet=i" => \$maxhet,
-		"MinHet=i" => \$minhet,
-		"MaxMaf=i" => \$maxmaf,
-		"MinMaf=i" => \$minmaf,
-		"MinCov=i" => \$mincov)
+		"MaxHet=f" => \$maxhet,
+		"MinHet=f" => \$minhet,
+		"MaxMaf=f" => \$maxmaf,
+		"MinMaf=f" => \$minmaf,
+		"MinCov=f" => \$mincov,
+		"FixMinor=s" => \$fixminor);
 
 unless (($in) and ($out)){
-	die ("Must specific '--Infile = filename.hmp', --Outfile = filename.txt" );
+	die ("ERROR: Must specific '--Infile = filename.hmp', --Outfile = filename.txt\n" );
 }
 
 print "This script is taking in $in, filtering for $minhet < Het < $maxhet, $minmaf < MAF < $maxmaf, Coverage > $mincov, and printing to $out\n";
+if ($fixminor eq "true"){
+	print "It is also converting minor allele calls to heterozygote calls\n";
+}
 
-exit
-
-
+#Pick up the number of bad columns without genotype data
+require "countbadcolumns.pl";
+my ($iupac_coding, $badcolumns) = count_bad_columns($in);
+$. = 0;
 
 open IN, $in;
-
+open OUT, (">$out");
 my %samples;
 my @samples;
 #my %calls;
 while (<IN>){
 	chomp;
 	my $line = $_;
-	my @a1 = split(/\t/, $line);
-	if (($a1[0]=~/^#CHROM/)or($a1[0]=~/^CHROM/)){
-		print "CHROM\tPOS";
-		print "\tCoverage";
-		print "\tHeterozygosity";
-		print "\tMajor";
-		print "\tMinor1";
-		print "\tMinor2";
-		print "\tTriAllelic?";	
-		foreach my $i (2..$#a1){
-
-			$samples{$i}=$a1[$i];
-			push(@samples,$a1[$i]);
-			print "\t$a1[$i]";
+	my @a = split(/\t/, $line);
+	
+	if ($. == 1){
+		print OUT "id,";
+		foreach my $i ($badcolumns..$#a){
+			print OUT ",$a[$i]";
 		}
-		print "\n";
-	}else{	
-		unless ((/^plastid/) || (/^\n/)){
-			my $loc = "$a1[0]\t$a1[1]";
-			$line =~ s/-/NN/g;
-			my @a = split (/\t/,$line);
-			my %calls;
-			my $c;
-			my $has_calls;
-			my %base_count;
-			my $Good = "No";
-			my $tf;
-			my $numberHet;	
-			my $PercHet;	
-			my $Coverage;
-			my $Major = "0";
-			my $Tri = "No";
-			my $Minor1 = "0";
-			my $Minor2 = "0";
-			
-			foreach my $i (2..$#a){
-				$c++;			
-				$calls{$samples{$i}}=$a[$i];
-				$a[$i] =~ s/-/NN/;
-				unless ($a[$i] eq "NN"){
-					$has_calls++;
-					my @bases = split('',$a[$i]);
-					$base_count{$bases[0]}++;
-					$base_count{$bases[1]}++;
-					unless (($bases[0] eq "N")or($bases[1] eq "N")){
-						if($bases[0] ne $bases[1]){
-							$numberHet++;
-						}
-					}
-				}
-			}
-			if($numberHet){		
-				$PercHet = ($numberHet / $has_calls);
-				}
-			else {
-				$PercHet = 0;
-			}
-			if($has_calls){
-				$Coverage = ($has_calls/$c);
-				}
-			else {
-				$Coverage = 0;
-			}
-			#if($numberHet){
-			#	if(($numberHet/$has_calls)>0.5){
-			#		$Good = "no";
-			#	}
-			#}
-
-			# ignore this count from now on 
-			delete $base_count{"N"};
-			my @sort_bases = reverse sort { $base_count{$a} <=> $base_count{$b} } keys %base_count;
-			my %base_order;		
-			foreach my $i (0..$#sort_bases){
-				$base_order{($i+1)} = $sort_bases[$i];	
-			}
 		
-			unless ($base_order{4}){
-				if ($base_order{3}){
-					my $b3=$base_count{$base_order{3}};
-					my $b2=$base_count{$base_order{2}};
-					my $b1=$base_count{$base_order{1}};
-					$Major=(1-(($b3+$b2)/($has_calls*2)));
-					$Tri = "Yes";
-					$Minor1 = ($b2/($has_calls*2));
-					$Minor2 = ($b3/($has_calls*2));
-					$Good = "Yes";
-					if ( ( ($b3/($has_calls*2)) <= 0.05) and ( ($b2/($has_calls*2))>= 0.05) ) {
-						$tf++;	# then its okay
-					}
-				}elsif ($base_order{2}){ 
-					# there is 2
-					my $b2=$base_count{$base_order{2}};
-					my $b1=$base_count{$base_order{1}};
-					$Major=(1-($b2/($has_calls*2)));
-					$Minor1=($b2/($has_calls*2));
-					$Tri = "No";
-					$Good = "Yes";	
-						if ( ($b2/($has_calls*2)) >= 0.05) { 
-							#minor allele is > then 20
-							$tf++;
-						}else{
-					}
-				}elsif ($base_order{1}){
-					$Good = "No";
-				}
-			}else {
-				$Good = "No";
+	}else{
+		next if /^\s*$/;
+		my $good_count = 0;
+		my $allele_count = 0;
+		my $Hetcount = 0;
+		my %total_alleles;
+		my $sample_count = 0;
+		my $coverage_check;
+		my $maf_check;
+		my $het_check;
+		my $b1;	
+		my $b2;
+		foreach my $i ($badcolumns..$#a){
+			if ($iupac_coding eq "TRUE"){
+				$a[$i] = $t{$a[$i]};
+				$sample_count++;
 			}
-
-			if ($Good eq "Yes") {
-				#this one is okay to print OUT
-				print "$loc";
-                                print "\t".$Coverage;
-                                print "\t".$PercHet;
-				print "\t".$Major;
-				print "\t".$Minor1;
-				print "\t".$Minor2;
-				print "\t".$Tri;
-				foreach my $s (@samples) {
-					my $x;
-					my @b = split('',$calls{$s});                       
-					if ($b[0] eq $b[1]){
-					# is homo
-						if ($b[0] eq "N"){
-							$x="NN";
+			unless ($a[$i] eq "NN"){
+				$good_count++;
+				$allele_count+=2;
+				my @bases = split(//, $a[$i]);
+				$total_alleles{$bases[0]}++;
+				$total_alleles{$bases[1]}++;
+				if ($bases[0] ne $bases[1]){
+					$Hetcount++;
+				}
+			}
+		}
+		if (($good_count/$sample_count) > $mincov){
+			$coverage_check++;
+		}
+		if ((($Hetcount/$good_count) > $minhet) and (($Hetcount/$good_count) < $maxhet)){
+			$het_check++;
+		}
+		if (keys %total_alleles == 2){
+			my @bases = sort { $total_alleles{$a} <=> $total_alleles{$b} } keys %total_alleles ;
+			$b1 = $bases[1]; #major
+			$b2 = $bases[0]; #minor
+			if ((($total_alleles{$bases[0]}/$allele_count) > $minmaf) and (($total_alleles{$bases[0]}/$allele_count) < $maxmaf)){
+				$maf_check++;
+			}
+			if (($coverage_check) and ($het_check) and ($maf_check)){
+				print OUT "\n$a[0],1";
+				foreach my $i ($badcolumns..$#a){
+					my @bases = split(//, $a[$i]);
+					if ($bases[0] eq "N"){
+						print OUT ",-";
+					}elsif ($bases[0] ne $bases[1]){
+						print OUT ",H";
+					}elsif ($bases[0] eq $b1){
+						print OUT ",A";
+					}elsif ($bases[0] eq $b2){
+						unless ($fixminor eq "true"){
+							print OUT ",B";
 						}else{
-							$x = "$b[0]$b[1]";
+							print OUT ",H";
 						}
 					}else{
-						if ( $b[0]eq "N") { # make it homo for the other
-							$x = "$b[1]$b[1]";
-						}elsif ( $b[1]eq "N") {
-							$x = "$b[0]$b[0]"
-						}else{
-							$x = "$b[0]$b[1]"
-						}
+						die ("SOMETHING WENT WRONG\n");
 					}
-					print "\t$x";	
 				}
-				print "\n";
 			}
 		}
 	}
 }
+close OUT;
 close IN;
-
-
-
-
