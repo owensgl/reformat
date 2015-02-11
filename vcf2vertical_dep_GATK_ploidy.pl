@@ -5,7 +5,7 @@ use File::Basename;
 my $min_gt_qual = 20;
 my $min_mq = 20;
 my $min_qual = 20;
-my $min_dp = 5;
+my $min_dp = 20;
 my $max_dp =100000;
 
 #old VCF2VERTICAL had format from mpileup: GT:PL:DP:GQ
