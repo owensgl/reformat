@@ -40,7 +40,7 @@ while(<STDIN>){
 		my $info =   shift @fields;
 		my $format = shift @fields;
 		if($line=~m/^#/){
-			print "chrom\tpos\tref\tref_alleles\talt\talt_alleles";
+			print "chrom\tpos\tloc\tref\tref_alleles\talt\talt_alleles";
 		}
 		my @infofields = split(/;/, $info);
 		my $DP = 0;
@@ -59,7 +59,7 @@ while(<STDIN>){
                 }
 		elsif ($alt eq '.'){
 			if ($DP >= $min_dp){
-				print "\n$chrome\t$pos\t$ref\t$ploidy\t.\t.";
+				print "\n$chrome\t$pos\t${chrome}_$pos\t$ref\t$ploidy\t.\t.";
 			}
 		}
 		else{
@@ -67,7 +67,7 @@ while(<STDIN>){
 				my $tmp = ($AF * $ploidy);
 				my $altfreq = sprintf("%.0f", $tmp);
 				my $reffreq = ($ploidy - $altfreq);					
-				print "\n$chrome\t$pos\t$ref\t$reffreq\t$alt\t$altfreq";
+				print "\n$chrome\t$pos\t${chrome}_$pos\t$ref\t$reffreq\t$alt\t$altfreq";
 			}
 		}
 	}
