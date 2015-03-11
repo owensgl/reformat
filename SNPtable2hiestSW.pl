@@ -44,6 +44,9 @@ while (<POP>){
 }
 close POP;
 
+my $currentchr;
+my $currentpos_breakpoint = 0;
+my @breakpoints = 1;
 open IN, $in;
 while (<IN>){
     chomp;
@@ -55,8 +58,22 @@ while (<IN>){
         }
     }else{
         next if /^\s*$/;
+	next if /^scaffold/;
+	unless ($currentchr){
+		$currentchr = $a[0];
+	}
         my %total_alleles;
         $loci_count++;
+	if ($currentchr ne $a[0]){
+		push( @breakpoints, $loci_count);
+		$currentchr = $a[0];
+		$currentpos_breakpoint = 0;
+	}
+	elsif($a[1] > $currentpos_breakpoint) {
+		push(@breakpoints, $loci_count);
+		$currentpos_breakpoint = $currentpos_breakpoint + 5000000;
+	}
+		
         $marker{$loci_count} = "$a[0]_$a[1]";
         foreach my $i ($badcolumns..$#a){
             if ($iupac_coding eq "TRUE"){
@@ -91,37 +108,50 @@ while (<IN>){
     }
 }
 
-open(my $g_file, '>', "${out}.hiest.G");
-open(my $p_file, '>', "${out}.hiest.P");
-print $g_file "sample";
-foreach my $i (1..$loci_count){
-    print $g_file "\t$marker{$i}";
-}
-foreach my $sample (@samplelist){
-    if ($poplist{$sample} eq "H"){
-        print $g_file "\n";
-        print $g_file "$sample";
-        foreach my $i (1..$loci_count){
-            print $g_file "\t$data{$sample}{$i}";
-        }
-    }
-}
+open(my $window_file, '>', "${out}.windowregions.txt");
 close IN;
-close $g_file;
-print $p_file "Locus\tAllele\tP1\tP2";
-foreach my $i (1..$loci_count){
-    print $p_file "\n";
-    print $p_file "$marker{$i}\t1";
-    foreach my $pop (@parents){
-        my $freq;
-        if (($totals{$i}{$pop}{$Major{$i}}) and ($totals{$i}{$pop}{$Minor{$i}})){
-            $freq = ($totals{$i}{$pop}{$Major{$i}} / ($totals{$i}{$pop}{$Major{$i}} + $totals{$i}{$pop}{$Minor{$i}}));
-        }elsif($totals{$i}{$pop}{$Major{$i}}){
-            $freq = "1";
-        }else{
-            $freq = "0";
-        }
-        print $p_file "\t$freq";
-    }
+foreach my $window (1..($#breakpoints-1)){
+	open(my $g_file, '>', "${out}.window${window}.hiest.G");
+	open(my $p_file, '>', "${out}.window${window}.hiest.P");
+	print $g_file "sample";
+	my @startmarker = split(/_/,$marker{$breakpoints[$window]});
+	my @endmarker = split(/_/,$marker{$breakpoints[$window+1]});
+	my $midmarker;
+	if ($startmarker[0] eq $endmarker[0]){
+		$midmarker = $startmarker[1] + (($endmarker[1] - $startmarker[1]) / 2);
+	}else{
+		my @tmpendmarker = split(/_/,$marker{$breakpoints[$window+1]-1});
+		$midmarker = ($startmarker[1] + (($tmpendmarker[1] - $startmarker[1]) / 2));
+	}
+	print $window_file "${window}\t$startmarker[0]\t$midmarker\n";
+	foreach my $i ($breakpoints[$window]..($breakpoints[($window+1)]-1)){
+		print $g_file "\t$marker{$i}";
+	}
+	foreach my $sample (@samplelist){
+   		if ($poplist{$sample} eq "H"){
+        		print $g_file "\n";
+		        print $g_file "$sample";
+		        foreach my $i ($breakpoints[$window]..($breakpoints[($window+1)]-1)){
+        			print $g_file "\t$data{$sample}{$i}";
+		        }
+   		 }
+	}
+	close $g_file;
+	print $p_file "Locus\tAllele\tP1\tP2";
+	foreach my $i ($breakpoints[$window]..($breakpoints[($window+1)]-1)){
+		print $p_file "\n";
+		print $p_file "$marker{$i}\t1";
+    		foreach my $pop (@parents){
+        		my $freq;
+		        if (($totals{$i}{$pop}{$Major{$i}}) and ($totals{$i}{$pop}{$Minor{$i}})){
+		        	$freq = ($totals{$i}{$pop}{$Major{$i}} / ($totals{$i}{$pop}{$Major{$i}} + $totals{$i}{$pop}{$Minor{$i}}));
+        		}elsif($totals{$i}{$pop}{$Major{$i}}){
+            			$freq = "1";
+        		}else{
+            			$freq = "0";
+        		}
+        		print $p_file "\t$freq";
+		}
+    	}
+	close $p_file;
 }
-close $p_file;
