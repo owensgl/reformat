@@ -1,120 +1,101 @@
 #! /usr/bin/perl
-#From Laurie Stevison
-#program converts vcf file to fastPHASE input format
-#September 13th, 2012
+use warnings;
+use strict;
+#Originally from Laurie Stevison
+#Modified by Greg Owens
+#program converts vcf file to fastPHASE input format. Outputs one per chromosome. It only outputs bialleleic sites, it also requires a depth of 5 for a genotype to be output (otherwise it is unknown). It also removes indels and ignores scaffold contigs. 
 
-$vcf = $ARGV[0];
-$output = $ARGV[1];
-$output2 = $ARGV[2];
-$sample_size = $ARGV[3];
+my $vcf = $ARGV[0];
+my $output = $ARGV[1];
 
-unless ($#ARGV==3) {
-    print STDERR "Please provide name of input vcf file, filename for fastPHASE formatted output, filename for positions file, and sample size on command line\n\n";
+unless ($#ARGV==1) {
+    print STDERR "Please provide name of input vcf file, filename for output\n\n";
     die;
 } #end unless
 
 open(VCF, $vcf);
 
-@positions = ();
-@names = ();
-$loop_size = $sample_size + 8;
-%genotypes = ();
+my @positions = ();
+my @names = ();
+my $sample_size;
+my %genotypes = ();
 
 print STDERR "Reading in VCF file...";
 
+my $currentchrom;
+my %samplehash;
+my $min_depth = 5; #minimum number of reads to call a site.
+my $n_inds;
+my $n_snps;
+my $snpcount;
+my @site_list;
+my @samplenames;
+my %snphash;
 while(<VCF>) {
-    chomp;
-    if ($_=~/\#\#/) {
-	next;
-    } elsif ($_=~/\#/) {
-	@input_line = split(/\s+/, $_);
-	for ($a=9; $a<=$loop_size; $a++) {
-	    push(@names, $input_line[$a]);
-	} #end for
-	next;
-    } #end elsif
-    
-    @input_line = split(/\s+/, $_);
-    push(@positions, $input_line[1]);
+	chomp;
+	if ($_=~/\#\#/) {
+		next;
+	} elsif ($_=~/\#/) {
+		my @a = split(/\s+/, $_);
+		foreach my $i (9..$#a){
+			$samplehash{$i} = $a[$i];
+			push (@samplenames, $a[$i]);
+			$n_inds = ($#a - 9);
+		}
+	}else{
+		my @a = split(/\s+/, $_);
+		unless($currentchrom){
+			$currentchrom = $a[0];
+		}
+		if ($a[0] ne "$currentchrom"){
+			$n_snps = $snpcount;
+			open(OUTPUT, ">$output.$currentchrom.fphase.in");
+			open(LIST, ">$output.$currentchrom.locilist.txt");
+			print OUTPUT "$n_inds\n$n_snps\nP"; 
+			foreach my $site (@site_list){
+				print OUTPUT"\t$site";
+				print LIST "$site\n";
+			}
+			print OUTPUT "\n";
+			foreach my $samplename(@samplenames){
+				print OUTPUT "$samplename\n";
+				foreach my $i (0..1){
+					foreach my $site (@site_list){
+						my @tmp = split (//, $snphash{$site}{$samplename});
+						print OUTPUT "$tmp[$i]";
+					}print OUTPUT "\n";
+				}
+			}
+			$currentchrom = $a[0];
+			%snphash = ();
+			@site_list = ();
+			$snpcount = 0;
+		}
+		if ($a[0] =~/scaffold/){
+			exit;
+		}
+		if ((length($a[3]) ne "1") or (length($a[4]) ne "1")){
+			goto SKIP;
+		}
+		$snpcount++;
+                push (@site_list, $a[1]);
+		foreach my $i (9..$#a){
+			my @ind_data = split (/:/,$a[$i]);
+			if ($ind_data[0] eq "./."){
+		    		$snphash{$a[1]}{$samplehash{$i}} = "??";
+			}else{
+				my $depth= $ind_data[2];
+				if ($depth eq "."){
+					$snphash{$a[1]}{$samplehash{$i}} = "??";
+				}elsif ($depth > $min_depth){
+					$ind_data[0] =~ s/\///;
+					$snphash{$a[1]}{$samplehash{$i}} = $ind_data[0];
+				}else{
+					$snphash{$a[1]}{$samplehash{$i}} = "??";
+				}
+			}
+		}
+	}
+	SKIP:
+}
 
-    $ref = $input_line[3];
-    $alt = $input_line[4];
-
-    for ($i=9; $i<=$loop_size; $i++) {
-	$o = $i - 9;
-	$hap1 = $names[$o] . "_1";
-	$hap2 = $names[$o] . "_2";
-	@genotype = split(":", $input_line[$i]);
-#	print STDERR "Hap1: $hap1; Hap2: $hap2; $Before: $genotype[0]\t";
-	$genotype[0] =~ s/0/$ref/g;
-	$genotype[0] =~ s/1/$alt/g;
-	$genotype[0] =~ s/\./\?/g;
-#	print STDERR "After: $genotype[0]\n";
-	@haplotypes = split(/[\|\/]/, $genotype[0]);
-	push @{$genotypes{$hap1}}, $haplotypes[0];
-	push @{$genotypes{$hap2}}, $haplotypes[1];
-    } #end for
-} #end while
-
-print STDERR "done.\nNow printing output...";
-
-open(OUTPUT, ">$output");
-open(OUTPUT2, ">$output2");
-
-$number_loci = $#positions + 1;
-
-print OUTPUT "$sample_size\n$number_loci\nP ";
-print OUTPUT2 "CHR\tPOS\n";
-$positions_line = "P ";
-
-for ($b=0; $b<=$#positions; $b++) {
-    $positions_line .= "$positions[$b] ";
-    $cnt = length($positions_line);
-
-    if ($cnt<500000) {
-	print OUTPUT "$positions[$b] ";
-    } elsif ($cnt>=500000) {
-	print OUTPUT "\n$positions[$b] ";
-	$positions_line = "$positions[$b] ";
-    } #end elsif
-    print OUTPUT2 "$positions[$b]\n";
-} #end for
-
-for ($c=0; $c<=$#names; $c++) {
-    print OUTPUT "\n\# $names[$c]\n";
-
-    $hap1 = $names[$c] . "_1";
-    @hap1_geno = @{$genotypes{$hap1}};
-    $hap1_line = "";
-
-    for ($d=0; $d<=$#hap1_geno; $d++) {
-	$hap1_line .= $hap1_geno[$d];
-	$cnt2 = length($hap1_line);
-	if ($cnt2<500000) {
-	    print OUTPUT "$hap1_geno[$d]";
-	} elsif ($cnt2>=500000) {
-	    print OUTPUT "\n$hap1_geno[$d]";
-	    $hap1_line = "";
-	} #end elsif
-    } #end for
-    print OUTPUT "\n";
-
-    $hap2 = $names[$c] . "_2";
-    @hap2_geno = @{$genotypes{$hap2}};
-    $hap2_line = "";
-
-    for ($e=0; $e<=$#hap2_geno; $e++) {
-	$hap2_line .= $hap2_geno[$e];
-	$cnt3 = length($hap2_line);
-	if ($cnt3<500000) {
-	    print OUTPUT "$hap2_geno[$e]";
-	} elsif ($cnt3>=500000) {
-	    print OUTPUT "\n$hap2_geno[$e]";
-	    $hap2_line = "";
-	} #end elsif
-    } #end for
-} #end for
-
-print OUTPUT "\n";
-
-print STDERR "done.\n";

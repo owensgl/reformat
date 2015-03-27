@@ -80,19 +80,20 @@ while (<IN>){
 				}
 			}
 			if ($majorcount == 2){
-				$snp_hash{$samples{$i}}{$loci_count} = "11";
+				$snp_hash{$samples{$i}}{$loci_count} = "2";
 			}elsif($majorcount == 1){
-				$snp_hash{$samples{$i}}{$loci_count} = "01";
+				$snp_hash{$samples{$i}}{$loci_count} = "1";
 			}else{
-				$snp_hash{$samples{$i}}{$loci_count} = "00";
+				$snp_hash{$samples{$i}}{$loci_count} = "0";
 			}
 		}
 	}
 }
-my $n_snps = ($loci_count * 2);
+my $n_snps = ($loci_count);
+my $n_samples = ($#samplelist+1);
 print "#nexus\n\n";
 print "BEGIN Taxa;\n";
-print "DIMENSIONS ntax=$#samplelist;\n";
+print "DIMENSIONS ntax=$n_samples;\n";
 print "TAXLABELS\n";
 my $samplecounter = 0;
 foreach my $samplename(@samplelist){
