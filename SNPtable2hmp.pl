@@ -35,7 +35,6 @@ while (<IN>){
 		}
 	}else{
 		next if /^\s*$/;
-		print "\n";
 		my %total_alleles;
 		foreach my $i ($badcolumns..$#a){
 			if ($iupac_coding eq "TRUE"){
@@ -49,7 +48,7 @@ while (<IN>){
 		}
 		if (keys %total_alleles == 2){
 			my @bases = sort { $total_alleles{$a} <=> $total_alleles{$b} } keys %total_alleles ;
-			print "$a[0]_$a[1]\t$bases[0]/$bases[1]\t$a[0]\t$a[1]\t+\tNA\tNA\tNA\tNA\tNA\tQC+";
+			print "\n$a[0]_$a[1]\t$bases[0]/$bases[1]\t$a[0]\t$a[1]\t+\tNA\tNA\tNA\tNA\tNA\tQC+";
 			foreach my $i ($badcolumns..$#a){
 				print "\t$a[$i]";
 			}
