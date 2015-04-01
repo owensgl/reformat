@@ -40,7 +40,7 @@ while(<VCF>) {
 		foreach my $i (9..$#a){
 			$samplehash{$i} = $a[$i];
 			push (@samplenames, $a[$i]);
-			$n_inds = ($#a - 9);
+			$n_inds = ($#a - 8);
 		}
 	}else{
 		my @a = split(/\s+/, $_);
@@ -58,7 +58,7 @@ while(<VCF>) {
 			}
 			print OUTPUT "\n";
 			foreach my $samplename(@samplenames){
-				print OUTPUT "$samplename\n";
+				print OUTPUT "# $samplename\n";
 				foreach my $i (0..1){
 					foreach my $site (@site_list){
 						my @tmp = split (//, $snphash{$site}{$samplename});
