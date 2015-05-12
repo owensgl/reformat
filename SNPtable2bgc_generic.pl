@@ -96,7 +96,7 @@ while (<IN>){
 		}
 		print ADMIXFILE "locus_$locicount\n";
 		foreach my $eachpop (sort keys %popList){
-            if ($eachpop eq "p1"){
+            if ($eachpop eq "P1"){
 				my $c;
 				print PARFILE1 "locus_$locicount\n";
 				foreach my $allele (sort keys %alleles){
@@ -114,7 +114,7 @@ while (<IN>){
 				}
 				print PARFILE1 "\n";
 			}
-            elsif ($eachpop eq "p2"){
+            elsif ($eachpop eq "P2"){
 				my $c;
                 print PARFILE2 "locus_$locicount\n";
                 foreach my $allele (sort keys %alleles){

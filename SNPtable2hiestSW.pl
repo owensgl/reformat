@@ -35,7 +35,7 @@ my %totals;
 my @parents = ("P1", "P2");
 my %Major;
 my %Minor;
-
+my $window_size = 5000000;
 open POP, $pop;
 while (<POP>){
     chomp;
@@ -71,7 +71,7 @@ while (<IN>){
 	}
 	elsif($a[1] > $currentpos_breakpoint) {
 		push(@breakpoints, $loci_count);
-		$currentpos_breakpoint = $currentpos_breakpoint + 5000000;
+		$currentpos_breakpoint = $currentpos_breakpoint + $window_size;
 	}
 		
         $marker{$loci_count} = "$a[0]_$a[1]";
@@ -117,13 +117,22 @@ foreach my $window (1..($#breakpoints-1)){
 	my @startmarker = split(/_/,$marker{$breakpoints[$window]});
 	my @endmarker = split(/_/,$marker{$breakpoints[$window+1]});
 	my $midmarker;
+	my $windowsize;
+	my $startmarker;
+	my $endmarker;
 	if ($startmarker[0] eq $endmarker[0]){
 		$midmarker = $startmarker[1] + (($endmarker[1] - $startmarker[1]) / 2);
+		$windowsize = $endmarker[1] - $startmarker[1];
+		$startmarker = $startmarker[1];
+		$endmarker = $endmarker[1];
 	}else{
 		my @tmpendmarker = split(/_/,$marker{$breakpoints[$window+1]-1});
 		$midmarker = ($startmarker[1] + (($tmpendmarker[1] - $startmarker[1]) / 2));
+		$windowsize = $tmpendmarker[1] - $startmarker[1];
+		$startmarker = $startmarker[1];
+		$endmarker = $tmpendmarker[1];
 	}
-	print $window_file "${window}\t$startmarker[0]\t$midmarker\n";
+	print $window_file "${window}\t$startmarker\t$midmarker\t$endmarker\t$windowsize\n";
 	foreach my $i ($breakpoints[$window]..($breakpoints[($window+1)]-1)){
 		print $g_file "\t$marker{$i}";
 	}

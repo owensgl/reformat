@@ -3,7 +3,7 @@ use warnings;
 use strict;
 #Originally from Laurie Stevison
 #Modified by Greg Owens
-#program converts vcf file to fastPHASE input format. Outputs one per chromosome. It only outputs bialleleic sites, it also requires a depth of 5 for a genotype to be output (otherwise it is unknown). It also removes indels and ignores scaffold contigs. 
+#program converts vcf file to fastPHASE input format. Outputs one per chromosome. It only outputs bialleleic sites, it also requires a depth of 5 for a genotype to be output (otherwise it is unknown). It also removes indels and ignores scaffold contigs, and invariant sites. 
 
 my $vcf = $ARGV[0];
 my $output = $ARGV[1];
@@ -19,8 +19,8 @@ my @positions = ();
 my @names = ();
 my $sample_size;
 my %genotypes = ();
-
-print STDERR "Reading in VCF file...";
+my $Pline = "FALSE";
+print STDERR "Reading in VCF file...\n";
 
 my $currentchrom;
 my %samplehash;
@@ -48,15 +48,19 @@ while(<VCF>) {
 			$currentchrom = $a[0];
 		}
 		if ($a[0] ne "$currentchrom"){
+			print STDERR "Printing out $currentchrom...\n";
 			$n_snps = $snpcount;
 			open(OUTPUT, ">$output.$currentchrom.fphase.in");
 			open(LIST, ">$output.$currentchrom.locilist.txt");
-			print OUTPUT "$n_inds\n$n_snps\nP"; 
-			foreach my $site (@site_list){
-				print OUTPUT"\t$site";
-				print LIST "$site\n";
+			print OUTPUT "$n_inds\n$n_snps\n";
+			if ($Pline eq "TRUE"){ 
+				print OUTPUT "P";
+				foreach my $site (@site_list){
+					print OUTPUT"\t$site";
+					print LIST "$site\n";
+				}
+				print OUTPUT "\n";
 			}
-			print OUTPUT "\n";
 			foreach my $samplename(@samplenames){
 				print OUTPUT "# $samplename\n";
 				foreach my $i (0..1){
@@ -75,6 +79,9 @@ while(<VCF>) {
 			exit;
 		}
 		if ((length($a[3]) ne "1") or (length($a[4]) ne "1")){
+			goto SKIP;
+		}
+		if ($a[4] eq "."){
 			goto SKIP;
 		}
 		$snpcount++;
