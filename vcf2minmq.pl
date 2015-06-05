@@ -31,7 +31,7 @@ while (<STDIN>){
               if ($field < $minmq){
 		print STDERR"Cut $a[0]_$a[1] because MQ=$field\n";
 		$cutlines++;
-		next;
+		goto END;
 		}
           }
       }
@@ -39,6 +39,7 @@ while (<STDIN>){
       print "\n$line";
     }
   }
+  END:
 }
 
 print STDERR "There were $goodlines printed sites and $cutlines cut sites.\n"
