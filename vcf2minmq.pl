@@ -31,6 +31,7 @@ while (<STDIN>){
               if ($field < $minmq){
 		print STDERR"Cut $a[0]_$a[1] because MQ=$field\n";
 		$cutlines++;
+		next;
 		}
           }
       }
