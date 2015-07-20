@@ -9,7 +9,7 @@ my $start_cm = 0;
 my $current_chr;
 
 my $saved_cM;
-print "chrom\tstart\tend\tsize";
+print "chrom\tstart\tend\tcm_start\tcm_end\tcm_size";
 open MAP, $map;
 while (<MAP>){
 	chomp;
@@ -19,6 +19,12 @@ while (<MAP>){
 	}
 	else{
 		my $chrom = $a[0];
+		if ($chrom =~ m/^0/){
+			my @tmp = split(//, $chrom);
+			$chrom = "Ha$tmp[1]";
+		}else{
+			$chrom = "Ha$chrom";
+		}
 		my $bp = $a[1];
 		my $cM = $a[2];
 		if ($cM eq "NA"){
@@ -31,7 +37,7 @@ while (<MAP>){
 		if (($current_chr ne $chrom) or ($bp > $end_bp)){
 			my $start_bp = $end_bp - $window_size;
 			my $cM_size = $saved_cM - $start_cm;
-			print "\n$current_chr\t$start_bp\t$end_bp\t$cM_size";
+			print "\n$current_chr\t$start_bp\t$end_bp\t$start_cm\t$saved_cM\t$cM_size";
 			if ($current_chr ne $chrom){
 				$current_chr = $chrom;
 				$end_bp = $window_size;
