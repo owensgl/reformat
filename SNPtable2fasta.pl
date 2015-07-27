@@ -3,6 +3,24 @@ use strict;
 
 my $in = $ARGV[0];
 my $out = $ARGV[1];
+my %x;
+$x{"AG"} = "R";
+$x{"GA"} = "R";
+$x{"AA"} = "A";
+$x{"TT"} = "T";
+$x{"CC"} = "C";
+$x{"GG"} = "G";
+$x{"CT"} = "Y";
+$x{"TC"} = "Y";
+$x{"GC"} = "S";
+$x{"CG"} = "S";
+$x{"AT"} = "W";
+$x{"TA"} = "W";
+$x{"GT"} = "K";
+$x{"TG"} = "K";
+$x{"AC"} = "M";
+$x{"CA"} = "M";
+$x{"NN"} = "N";
 
 my %h;
 my %samples;
@@ -22,8 +40,7 @@ while (<IN>){
                 my $loc = "$a[1]\t$a[2]";
 		push(@loc, $loc);
                 foreach my $i (2..$#a){
-			my @tmp = split('',$a[$i]);        
-	                $h{$samples{$i}}{$loc}=$tmp[0];
+	                $h{$samples{$i}}{$loc}=$x{$a[$i]};
 	        }
 	}
 }

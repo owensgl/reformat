@@ -4,6 +4,7 @@
 use warnings;
 use strict;
 my $genefile = $ARGV[0];
+my $samplefile = $ARGV[1];
 
 my $min_dp = 5;
 my $min_qual = 20;
@@ -39,6 +40,14 @@ while (<GENEFILE>){
         }
 }
 close GENEFILE;
+
+my %printlist;
+open SAMPLEFILE, $samplefile;
+while(<SAMPLEFILE>){
+	chomp;
+	$printlist{$_}++;
+}	
+close SAMPLEFILE;
 
 my %samplelist;
 my $current_gene;
@@ -423,12 +432,14 @@ sub print_fastas{
 	my $outfile = "$folder/$current_gene.fasta";
 	open (OUTFILE, "> $outfile");
 	foreach my $i (9..$final_sample){
-		my $haplotypes = (keys %{$haplotype_count{$i}})+1;
-#		print "$current_gene has $haplotypes haplotypes in $samplelist{$i}\n";
-		print OUTFILE ">$samplelist{$i}:1 gene=$current_gene haplotypes=$haplotypes\n";
-		print OUTFILE "$sequence{$i}{1}\n";
-		print OUTFILE ">$samplelist{$i}:2 gene=$current_gene haplotypes=$haplotypes\n";
-		print OUTFILE "$sequence{$i}{2}\n";
+		if($printlist{$samplelist{$i}}){
+			my $haplotypes = (keys %{$haplotype_count{$i}})+1;
+#			print "$current_gene has $haplotypes haplotypes in $samplelist{$i}\n";
+			print OUTFILE ">$samplelist{$i}:1 gene=$current_gene haplotypes=$haplotypes\n";
+			print OUTFILE "$sequence{$i}{1}\n";
+			print OUTFILE ">$samplelist{$i}:2 gene=$current_gene haplotypes=$haplotypes\n";
+			print OUTFILE "$sequence{$i}{2}\n";
+		}
 	}
 	close OUTFILE;
 }
