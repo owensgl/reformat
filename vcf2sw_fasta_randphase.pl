@@ -5,7 +5,7 @@ use warnings;
 use strict;
 my $samplefile = $ARGV[0];
 
-my $min_dp = 5;
+my $min_dp = 0; #Not used minimum dp
 my $min_qual = 20;
 
 my $folder = "fasta";
@@ -134,7 +134,34 @@ sub call_biallelic {
 	if ($multi[2]){
 		print "There are three alleles in $chrom $pos\n";
 	}
-	my @formats = split(/:/, $format); 
+	my @formats = split(/:/, $format);
+	my $refcount = 0;
+	my $altcount = 0;
+	my $random_draw = int(rand(2)) +1;
+	my $totalcount = $final_sample - 8;
+	foreach my $i (9..$final_sample){
+                my @fields = split(/:/, $a[$i]);
+                my $dp = $fields[2];
+                if ($dp eq '.'){
+                }
+                elsif ($dp > $min_dp){
+                        if ($fields[0] eq '0/0'){
+                                $refcount++;
+                        }elsif($fields[0] eq '1/1'){
+                                $altcount++;
+                        }elsif($fields[0] eq '0/1'){
+                                if ($random_draw == 1){
+                                        $refcount++;
+                                }else{
+                                        $altcount++;
+                                }
+                        }
+                }
+	}
+		
+	unless (($refcount) and ($altcount)){	 
+	return;
+	}
 	foreach my $i (9..$final_sample){
 		my @fields = split(/:/, $a[$i]);
 		my $dp = $fields[2];
@@ -147,7 +174,6 @@ sub call_biallelic {
 			}elsif($fields[0] eq '1/1'){
 				$sequence{$i}.= $alt;
 			}elsif($fields[0] eq '0/1'){
-				my $random_draw = int(rand(2)) +1;
 				if ($random_draw == 1){
 					$sequence{$i}.=$ref;
 				}else{

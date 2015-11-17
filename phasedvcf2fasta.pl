@@ -42,10 +42,13 @@ while (<GENEFILE>){
 close GENEFILE;
 
 my %printlist;
+my %specieshash;
 open SAMPLEFILE, $samplefile;
 while(<SAMPLEFILE>){
 	chomp;
-	$printlist{$_}++;
+	my @a = split(/\t/,$_);
+	$printlist{$a[0]}++;
+	$specieshash{$a[0]} = $a[1];
 }	
 close SAMPLEFILE;
 
@@ -106,8 +109,14 @@ while(<STDIN>){
 		}else{
 			$biallelic_site++;
 		}
-		if ($qual < $min_qual){
-			$multiallelic_site++ #Prints only N
+		unless($invariant_site){
+			if ($qual eq "."){
+				$multiallelic_site++;
+			}else{
+				if ($qual < $min_qual) {
+					$multiallelic_site++ #Prints only N
+				}
+			}
 		}
 		if (($counter % 100000)== 0){
 			print "Processing $chrom $pos...\n";
@@ -168,6 +177,18 @@ sub call_biallelic {
 	my $alt = $a[4];
 	my $info = $a[7];
 	my $format = $a[8];
+	until (length($ref) == length($alt)){ #Fixes gaps from indels
+		if (length($ref) > length($alt)){
+			$alt .= "-";
+		}
+		if (length($alt) > length($ref)){
+			$ref .= "-";
+		}
+	}
+	my $null = "-";
+        until (length($null) eq length($ref)){
+                $null .= "-";
+        }
 	my @multi = split (/,/,$alt);
 	if ($multi[2]){
 		print "There are three alleles in $chrom $pos\n";
@@ -178,7 +199,7 @@ sub call_biallelic {
 		my $dp = $fields[2];
 		if ($dp eq '.'){
   	        	for my $strand (1..2){
-                                $sequence{$i}{$strand}.= "N";
+                                $sequence{$i}{$strand}.= $null;
                         }
 		}
 		elsif ($dp > $min_dp){
@@ -220,7 +241,7 @@ sub call_biallelic {
 				else{ print "The phase is $phase for 0/1bi on $pos, in $samplelist{$i}.\n";}
 			}elsif($fields[0] eq './.'){
 				for my $strand (1..2){
-                                	$sequence{$i}{$strand}.= "N";
+                                	$sequence{$i}{$strand}.= $null;
 				}
                         }else{
 				print "A sample has >5 reads but no call? It's call is $fields[0]\n";
@@ -228,7 +249,7 @@ sub call_biallelic {
 				
 		}else{
 			for my $strand (1..2){
-				$sequence{$i}{$strand}.= "N";
+				$sequence{$i}{$strand}.= $null;
 			}
 		}
 	}
@@ -255,14 +276,31 @@ sub call_triallelic {
 	my $info = $a[7];
 	my $format = $a[8];
 	my @alts = split (/,/,$alt);
-	
+	until ((length($alts[0]) eq length($ref)) and (length($alts[1]) eq length($ref))){
+               if (length($ref) > length($alts[0])){
+                        $alts[0] .= "-";
+                }
+                if (length($alts[0]) > length($ref)){
+                        $ref .= "-";
+                }
+               	if (length($ref) > length($alts[1])){
+                        $alts[1] .= "-";
+                }
+                if (length($alts[1]) > length($ref)){
+                        $ref .= "-";
+                }
+	}
+	my $null = "-";
+	until (length($null) eq length($ref)){
+		$null .= "-";
+	}
 	my @formats = split(/:/, $format); 
 	foreach my $i (9..$final_sample){
 		my @fields = split(/:/, $a[$i]);
 		my $dp = $fields[2];
 		if ($dp eq '.'){
   	        	for my $strand (1..2){
-                                $sequence{$i}{$strand}.= "N";
+                                $sequence{$i}{$strand}.= $null;
                         }
 		}
 		elsif ($dp > $min_dp){
@@ -364,7 +402,7 @@ sub call_triallelic {
 				else{ print "The phase is $phase for 1/2 on $pos, in $samplelist{$i}\n";}
 			}elsif($fields[0] eq './.'){
 				for my $strand (1..2){
-                                	$sequence{$i}{$strand}.= "N";
+                                	$sequence{$i}{$strand}.= $null;
 				}
                         }else{
 				print "A sample has >5 reads but no call? It's call is $fields[0]\n";
@@ -372,7 +410,7 @@ sub call_triallelic {
 				
 		}else{
 			for my $strand (1..2){
-				$sequence{$i}{$strand}.= "N";
+				$sequence{$i}{$strand}.= $null;
 			}
 		}
 	}
@@ -389,6 +427,7 @@ sub call_multiallelic{
 	}
 }
 sub call_invariants{
+	#return;
         my $line = shift;
         my @a = split(/\t/,$line);
         my $pos = $a[1];
@@ -435,9 +474,11 @@ sub print_fastas{
 		if($printlist{$samplelist{$i}}){
 			my $haplotypes = (keys %{$haplotype_count{$i}})+1;
 #			print "$current_gene has $haplotypes haplotypes in $samplelist{$i}\n";
-			print OUTFILE ">$samplelist{$i}:1 gene=$current_gene haplotypes=$haplotypes\n";
+		#	print OUTFILE ">$specieshash{$samplelist{$i}} $samplelist{$i}:1 gene=$current_gene haplotypes=$haplotypes\n";
+			print OUTFILE ">$specieshash{$samplelist{$i}} $samplelist{$i}:1\n";
 			print OUTFILE "$sequence{$i}{1}\n";
-			print OUTFILE ">$samplelist{$i}:2 gene=$current_gene haplotypes=$haplotypes\n";
+			print OUTFILE ">$specieshash{$samplelist{$i}} $samplelist{$i}:2\n";
+		#	print OUTFILE ">$specieshash{$samplelist{$i}} $samplelist{$i}:2 gene=$current_gene haplotypes=$haplotypes\n";
 			print OUTFILE "$sequence{$i}{2}\n";
 		}
 	}

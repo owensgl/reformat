@@ -46,22 +46,28 @@ while (<IN>){
 	my @a = split (/\t/,$_);
   	if ($. == 1 ){
                 foreach my $i ($NumColBad..$#a){
-                        $samples{$i}=$a[$i];
-                        push(@samples,$a[$i]);
+			if ($pop{$a[$i]}){
+	                        $samples{$i}=$a[$i];
+        	                push(@samples,$a[$i]);
+			}
                 }
         }else{
 		my %h;
 		my %alleles;
 		foreach my $i ($NumColBad..$#a){
-			unless ($a[$i] eq "NN"){
-				my @tmp = split('',$a[$i]); 
-				$h{$pop{$samples{$i}}}{$tmp[0]}++;
-				$h{$pop{$samples{$i}}}{$tmp[1]}++;
-				$alleles{$tmp[0]}++;
-				$alleles{$tmp[1]}++;
+			if ($samples{$i}){
+				unless ($a[$i] eq "NN"){
+					my @tmp = split('',$a[$i]); 
+					$h{$pop{$samples{$i}}}{$tmp[0]}++;
+					$h{$pop{$samples{$i}}}{$tmp[1]}++;
+					$alleles{$tmp[0]}++;
+					$alleles{$tmp[1]}++;
+				}
 			}
 		}
-		
+		if (keys %alleles ne 2){	
+			next;
+		}
 		foreach my $pop (sort keys %popList){
 			my $c;
 			foreach my $allele (sort keys %alleles){
