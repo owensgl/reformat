@@ -23,7 +23,7 @@ while (<IN>){
                 my $loc = "$a[1]\t$a[2]";
 		push(@loc, $loc);
                 foreach my $i (5..$#a){
-			my @bases = split(//,$a[$i]);
+			my @bases = split(/\//,$a[$i]);
 			unless ($bases[1]){
 				$h{$samples{$i}}{$loc}=$a[$i];
 			}else{			
