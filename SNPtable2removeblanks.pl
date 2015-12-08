@@ -3,11 +3,9 @@
 use warnings;
 use strict;
 
-my $in = $ARGV[0];
 
-open IN, $in;
 
-while (<IN>){
+while (<STDIN>){
 	my $GenoCount = 0;
 	chomp;
 	if ($. == 1){
@@ -15,6 +13,9 @@ while (<IN>){
 	}else{
 		my @a = split(/\t/,$_);
 		foreach my $i (2..$#a){
+			if ($GenoCount > 1){
+				goto PRINTLINE;
+			}
 			if ($a[$i] ne "NN"){
 				$GenoCount++;
 			}
@@ -22,9 +23,7 @@ while (<IN>){
 		if (($GenoCount eq "0") or ($GenoCount eq "1")){
 			next;
 		}
-		else{
-			print "\n$_";
-		}
+		PRINTLINE:
+		print "\n$_";
 	}
 }
-close IN;

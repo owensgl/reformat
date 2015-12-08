@@ -2,10 +2,10 @@
 use warnings;
 use strict;
 use File::Basename;
-my $min_gt_qual = 20;
+my $min_gt_qual = 5;
 my $min_mq = 20;
 my $min_qual = 20;
-my $min_dp = 5;
+my $min_dp = 3;
 my $max_dp =100000;
 
 #old VCF2VERTICAL had format from mpileup: GT:PL:DP:GQ
@@ -43,7 +43,7 @@ while(<STDIN>){
 				$qual = 0;
 			}
 			my $meta = "$chrome\t$pos\t$id\t$ref\t$alt\t$qual\t$filter\t$info\t$format";
-			my @alts = split(/,/, $alt);
+			my @alts = split(/,/,$alt);
 			if($line=~m/^#CHROM/){
 				print "CHROM\t$pos";
 				foreach(@fields){
@@ -56,16 +56,16 @@ while(<STDIN>){
                         elsif ((length($ref) > 1) or (length($alts[0]) > 1)){ #If its an indel, skip the line
                                 next;
                         }
-			elsif($alts[1]){
-				if (length($alts[1]) > 1){
-					next;
-				}
-			}
-			elsif($alts[2]){
-				if (length($alts[2]) > 1){
-					next;
-				}
-			}
+                        elsif($alts[1]){
+                                if (length($alts[1]) > 1){
+                                        next;
+                                }
+                        }
+                        elsif($alts[2]){
+                                if (length($alts[2]) > 1){
+                                        next;
+                                }
+                        }
 			elsif ($alt eq "\."){
 				print "$chrome\t$pos";
 				if ($format eq "GT:DP"){
@@ -75,7 +75,7 @@ while(<STDIN>){
 							if ($genotype[1] eq '.'){
 								print "\tNN";
 							}
-							elsif ($genotype[1] >= 5){
+							elsif ($genotype[1] >= $min_dp){
 								print "\t$ref$ref";
 							}else{				
 								print "\tNN";
@@ -92,7 +92,7 @@ while(<STDIN>){
 	                                                if ($genotype[2] eq '.'){
         	                                                print "\tNN";
                	                                	}
-	                                                elsif ($genotype[2] >= 5){
+	                                                elsif ($genotype[2] >= $min_dp){
 	                                                        print "\t$ref$ref";
 	                                                }else{
 	                                                        print "\tNN";
@@ -109,7 +109,7 @@ while(<STDIN>){
 						if ($genotype[1]){
 							if ($genotype[1] eq '.'){
 								print "\tNN";
-							}elsif ($genotype[1] >= 5){
+							}elsif ($genotype[1] >= $min_dp){
 								print "\t$ref$ref";
 							}else{
 								print "\tNN";
@@ -126,7 +126,7 @@ while(<STDIN>){
 							if ($genotype[2] eq '.'){
 	                                                	print "\tNN";
         	                                        }
-                	                                elsif ($genotype[2] >= 5){
+                	                                elsif ($genotype[2] >= $min_dp){
                         	                                print "\t$ref$ref";
                                 	                }else{
                                         	                print "\tNN";
