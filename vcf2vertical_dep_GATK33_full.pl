@@ -53,20 +53,26 @@ while(<STDIN>){
 				}
 				print "\n";
 			}
-                        elsif ((length($ref) > 1) or (length($alts[0]) > 1)){ #If its an indel, skip the line
+                        if ((length($ref) > 1) or (length($alts[0]) > 1)){ #If its an indel, skip the line
+#				print STDERR "$pos\tSkipped because of ref or alt 1\n";
                                 next;
                         }
-			elsif($alts[1]){
+			if($alts[1]){
 				if (length($alts[1]) > 1){
+#					print STDERR "$pos\tSkipped because of alt 2\n";
 					next;
 				}
 			}
-			elsif($alts[2]){
+			if($alts[2]){
 				if (length($alts[2]) > 1){
+#					print STDERR "$pos\tSkipped because of alt 3\n";
 					next;
 				}
 			}
-			elsif ($alt eq "\."){
+			if($alts[3]){
+				next;
+			}
+			if ($alt eq "\."){
 				print "$chrome\t$pos";
 				if ($format eq "GT:DP"){
 					foreach(@fields){
@@ -75,7 +81,7 @@ while(<STDIN>){
 							if ($genotype[1] eq '.'){
 								print "\tNN";
 							}
-							elsif ($genotype[1] >= 5){
+							elsif ($genotype[1] >= $min_dp){
 								print "\t$ref$ref";
 							}else{				
 								print "\tNN";
@@ -92,7 +98,7 @@ while(<STDIN>){
 	                                                if ($genotype[2] eq '.'){
         	                                                print "\tNN";
                	                                	}
-	                                                elsif ($genotype[2] >= 5){
+	                                                elsif ($genotype[2] >= $min_dp){
 	                                                        print "\t$ref$ref";
 	                                                }else{
 	                                                        print "\tNN";
@@ -109,7 +115,7 @@ while(<STDIN>){
 						if ($genotype[1]){
 							if ($genotype[1] eq '.'){
 								print "\tNN";
-							}elsif ($genotype[1] >= 5){
+							}elsif ($genotype[1] >= $min_dp){
 								print "\t$ref$ref";
 							}else{
 								print "\tNN";
@@ -126,7 +132,7 @@ while(<STDIN>){
 							if ($genotype[2] eq '.'){
 	                                                	print "\tNN";
         	                                        }
-                	                                elsif ($genotype[2] >= 5){
+                	                                elsif ($genotype[2] >= $min_dp){
                         	                                print "\t$ref$ref";
                                 	                }else{
                                         	                print "\tNN";
@@ -141,20 +147,16 @@ while(<STDIN>){
 			}
 			else{
 	                        if(($qual < $min_qual) or ($mq < $min_mq)){
-	                                next;
+#	                                print STDERR "$pos\tSkipped because of qual or mq\n";
+					next;
         	                }
 				print "$chrome\t$pos";
 				foreach(@fields){
 					my $fourbasename = "$_";
 					my $allele0 = &GT($ref,$alt,$fourbasename);
-					if(($qual >= $min_qual) && ($mq >= $min_mq)){
-						print "\t$allele0";
+					print "\t$allele0";
 
 
-					}
-					else{
-						print "\tNN";
-					}
 				}
 				print "\n";
 			}
@@ -202,7 +204,7 @@ sub GT{
 	if ($gq eq '.' || $dp eq '.' ){
 		return 'NN';
 	}	
-	elsif ($gq <= $min_gt_qual || $dp <= $min_dp || $dp > $max_dp  ){
+	elsif ($gq <= $min_gt_qual || $dp < $min_dp || $dp > $max_dp  ){
 		return 'NN';	
 	}else{
 		my $i =1;
