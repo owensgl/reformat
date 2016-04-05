@@ -46,7 +46,7 @@ $rom{"XIX"} = "19";
 $rom{"XX"} = "20";
 $rom{"XXI"} = "21";
 $rom{"XXII"} = "22";
-
+$rom{"chrVIIpitx1"} = "99";
 
 
 if ($pop){
