@@ -3,8 +3,8 @@
 use warnings;
 use strict;
 
-my $map = "/home/owens/ref/lg.ALL.bronze14.path.txt"; #lg.ALL.bronze14.path.txt
-my $snp = $ARGV[0]; #SNP file in tab format
+my $map = $ARGV[0]; #lg.ALL.bronze14.path.txt
+my $snp = $ARGV[1]; #SNP file in hmp format
 
 my $tmp;
 my %hash;
@@ -15,14 +15,7 @@ while(<MAP>){
 	if ($. ne "1"){
 		if ($a[2] ne "NA"){
 			my $chrom = $a[0];
-			if ($chrom =~ m/^0/){
-				my @tmp = split(//, $chrom);
-				$chrom = "Ha$tmp[1]";
-			}else{
-				$chrom = "Ha$chrom";
-			}
 			$hash{$chrom}{$a[1]} = $a[2];
-			$tmp = $chrom;
 		}
 	}
 }

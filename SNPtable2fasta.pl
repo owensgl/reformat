@@ -1,8 +1,6 @@
 use warnings;
 use strict;
 
-my $in = $ARGV[0];
-my $out = $ARGV[1];
 my %x;
 $x{"AG"} = "R";
 $x{"GA"} = "R";
@@ -27,8 +25,7 @@ my %samples;
 my @samples;
 my @loc;
 
-open IN, "$in";
-while (<IN>){
+while (<STDIN>){
 	chomp;
 	my @a = split (/\t/,$_);
   	if ($. == 1){
@@ -44,13 +41,11 @@ while (<IN>){
 	        }
 	}
 }
-close IN;
-open OUT, ">$out";
 foreach my $s (@samples){
-	print OUT ">$s\n";
+	print ">$s\n";
 	foreach my $loc (@loc){
-		print OUT "$h{$s}{$loc}";
+		print "$h{$s}{$loc}";
 	}
-	print OUT "\n";
+	print "\n";
 }
 
