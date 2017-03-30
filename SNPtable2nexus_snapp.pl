@@ -2,7 +2,6 @@
 #This reformates to nex format for snapp. It also has a feature built in where it only outputs the first X of each species. Change this if you want to print all.
 use warnings;
 use strict;
-use lib '/home/owens/bin/pop_gen/'; #For GObox server
 my %t;
 $t{"N"} = "NN";
 $t{"A"} = "AA";
@@ -25,7 +24,7 @@ $f{"TC"} = "CT";
 $f{"TG"} = "GT";
 
 my $popfile = $ARGV[0]; #Sample name and species. It appends species to sample name
-my $max_per_species = 4;
+my $max_per_species = 1000;
 
 my %species;
 my %species_count;
