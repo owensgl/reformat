@@ -4,8 +4,8 @@ use warnings;
 use strict;
 
 my $map = $ARGV[0]; #lg.ALL.bronze14.path.txt
-my $snp = $ARGV[1]; #SNP file in hmp format
-
+#my $snp = $ARGV[1]; #SNP file in hmp format
+#SNPfile piped in
 my $tmp;
 my %hash;
 open MAP, $map;
@@ -22,8 +22,9 @@ while(<MAP>){
 
 close MAP;
 
-open SNP, $snp;
-while(<SNP>){
+#open SNP, $snp;
+#while(<SNP>){
+while(<STDIN>){
 	chomp;
 	my $line = $_;
 	my @a = split(/\t/,$line);

@@ -7,7 +7,7 @@ my $min_mq = 20;
 my $min_qual = 20;
 my $min_dp = 5;
 my $max_dp =100000;
-my $print_ref = 1; #MAke it print_ref = 0 to make it not print the reference as it's own column.
+my $print_ref = 0; #MAke it print_ref = 0 to make it not print the reference as it's own column.
 #old VCF2VERTICAL had format from mpileup: GT:PL:DP:GQ
 #THIS VERSION:    has format from GATK-UG: GT:AD:DP:GQ:PL
 #GLO VERSION Sept2014: includes ./.:
@@ -38,6 +38,8 @@ while(<STDIN>){
 			my $mq = "NA";
 			if($info=~m/MQ=(\d+)/){
 				$mq = "$1";	
+			}else{
+			#	print STDERR "$pos\t$alt\n";
 			}
 			if ($qual eq '.'){
 				$qual = 0;
@@ -56,10 +58,14 @@ while(<STDIN>){
 				}
 				print "\n";
 			}
-                        if ((length($ref) > 1) or (length($alts[0]) > 1)){ #If its an indel, skip the line
+			if ($alts[0] eq "<NON_REF>"){
+
+			}elsif ((length($ref) > 1) or (length($alts[0]) > 1)){ #If its an indel, skip the line
 #				print STDERR "$pos\tSkipped because of ref or alt 1\n";
                                 next;
                         }
+			if ($alt eq "*"){next;}
+			if ($alt eq "\."){next;}
 			if($alts[1]){
 				if (length($alts[1]) > 1){
 #					print STDERR "$pos\tSkipped because of alt 2\n";
@@ -75,7 +81,7 @@ while(<STDIN>){
 			if($alts[3]){
 				next;
 			}
-			if ($alt eq "\."){
+			if ($alt eq "<NON_REF>"){
 				print "$chrome\t$pos";
 				if ($format eq "GT:DP"){
 					foreach(@fields){
@@ -152,6 +158,8 @@ while(<STDIN>){
 				print "\n";
 			}
 			else{
+				if ($mq eq "NA"){print STDERR "\n$chrome\t$pos\tWEIRD mq skipped";next;}
+                                if ($qual eq "NA"){print STDERR "\n$chrome\t$pos\tWEIRD qual";}
 	                        if(($qual < $min_qual) or ($mq < $min_mq)){
 #	                                print STDERR "$pos\tSkipped because of qual or mq\n";
 					next;

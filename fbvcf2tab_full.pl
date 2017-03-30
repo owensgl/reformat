@@ -36,7 +36,7 @@ while(<STDIN>){
                 next;
             }
             if ($type ne "TYPE=snp"){
-                next;
+               next;
             }
         }
         #Grab genotype info

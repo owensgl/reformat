@@ -34,41 +34,43 @@ while (<IN>){
 	$bar1{$a[0]}=$a[1];
 	$bar2{$a[0]}=$a[2];
 	#Make all possible permutations of barcodes:
-#	foreach my $i (0..length($a[1])-1){
-#		my @parts = split(//,$a[1]);
-#		foreach my $base (@bases){
-#			my $permutation;
-#			foreach my $j (0..length($a[1])-1){
-#				if ($j eq $i){
-#					$permutation .= $base;
-#				}else{
-#					$permutation .= $parts[$j];
-#				}
-#			}
-#			print STDERR "\n=$permutation";
-#			$bar1_permutations{$permutation} = $a[0];
-#		}
-#	}
-#        foreach my $i (0..length($a[2])-1){
-#                my @parts = split(//,$a[2]);
-#                foreach my $base (@bases){
-#                        my $permutation;
-#                        foreach my $j (0..length($a[2])-1){
-#                                if ($j eq $i){
-#                                        $permutation .= $base;
-#                                }else{
-#                                        $permutation .= $parts[$j];
-#                                }
-#                        }
-#                        $bar2_permutations{$permutation} = $a[0];
-#                }
-#        }
+	foreach my $i (0..length($a[1])-1){
+		my @parts = split(//,$a[1]);
+		foreach my $base (@bases){
+			my $permutation;
+			foreach my $j (0..length($a[1])-1){
+				if ($j eq $i){
+					$permutation .= $base;
+				}else{
+					$permutation .= $parts[$j];
+				}
+			}
+			$bar1_permutations{$a[0]}{$permutation} = $a[0];
+		}
+	}
+	if ($a[2]){
+	        foreach my $i (0..length($a[2])-1){
+        	        my @parts = split(//,$a[2]);
+               		foreach my $base (@bases){
+                        	my $permutation;
+                        	foreach my $j (0..length($a[2])-1){
+                                	if ($j eq $i){
+                                        	$permutation .= $base;
+                                	}else{
+                                        	$permutation .= $parts[$j];
+                                	}
+                        	}
+                        	$bar2_permutations{$a[0]}{$permutation} = $a[0];
+				
+                	}
+        	}
+	}
 
 	#this is to remove old ones
 	#print "\t$a[1]\t$a[0]";
 	if ($print_mates){
-		my $filenameR1 = "$out"."_$a[0]"."_R1.fastq";
-		my $filenameR2 = "$out"."_$a[0]"."_R2.fastq";
+		my $filenameR1 = "$out"."$a[0]"."_R1.fastq";
+		my $filenameR2 = "$out"."$a[0]"."_R2.fastq";
 		if (-e $filenameR1) {
 			system ("rm $filenameR1");
 		}
@@ -76,13 +78,12 @@ while (<IN>){
 			system ("rm $filenameR2");
 		}
 	}else{
-		if (-e "$out"."_$a[0].fastq") {
-			system ("rm $out"."_$a[0].fastq");
+		if (-e "$out"."$a[0].fastq") {
+			system ("rm $out"."$a[0].fastq");
 		}
 	}
 }
-exit
-system  ("rm $out"."_nobar*.fastq");
+system  ("rm $out"."nobar*.fastq");
 close IN;
 my @samples = sort keys %bar1;
 unless($fastq_1 =~ /\.gz$/){
@@ -131,20 +132,21 @@ while (my $seq1 = <FAST1>){
 			if ($re_site eq $read1_enzyme){
 				my $bc = substr($tmp,0,$i);
 				foreach my $sample (@samples){
-					if ($bar1{$sample} eq $bc){
-					# check that the RE site is there
+					if ($bar1_permutations{$sample}{$bc}){
 						$bar1_number{$sample}++;
-						$bc1seq = $bc;
+						$bc1seq = $bar1{$sample};
 #						print STDERR " BC1=$sample";
 						if ($bar2{$sample}){
 							my $j = length($bar2{$sample}); #If you found the barcode on read one, check if the match is on read two.
 							my $tmp2 = $read2;
-       					                my $bc2 = substr($tmp2,0,$j);
-							if ($bar2{$sample} eq $bc2){
-								#my $re_site = substr($tmp2,($j),length($read2_enzyme));
-								$bar2_number{$sample}++;
-	                                        	        $bc2seq = $bc2;
-								goto MOVEON;
+       				           		my $bc2 = substr($tmp2,0,$j);
+							if ($bar2_permutations{$sample}{$bc2}){
+								if ($bar2_permutations{$sample}{$bc2} eq $sample){
+									#my $re_site = substr($tmp2,($j),length($read2_enzyme));
+									$bar2_number{$sample}++;
+	        	                       	                 	$bc2seq = $bar2{$sample};
+									goto MOVEON;
+								}
 							}
 						}else{
 							$bar2_number{$sample}++;
@@ -183,7 +185,7 @@ while (my $seq1 = <FAST1>){
 		# CTGCAAGATCGGAAGAGCGGTTCAGCAGGAATGCCGA
 		if (($read=~/$read2_enzyme/) and ($bc2seq)){
 			my $revBC2 = reverse $bc2seq;
-			$revBC2 =~ tr/A|T|G|C/T|A|C|G/; #Reverse compliment the second barcode
+			$revBC2 =~ tr/A|T|G|C|N/T|A|C|G|N/; #Reverse compliment the second barcode
 			my $adapter = $revBC2."AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG";
 			my @rd = split $read2_enzyme,$read; #If it goes into next
 			my $end = $rd[1];
@@ -283,7 +285,7 @@ while (my $seq1 = <FAST1>){
                         }
                 }
 
-		my $outfile =  "$out"."_$bar_number";
+		my $outfile =  "$out"."$bar_number";
 		$read =~ s/\./N/g;
 		$read2 =~ s/\./N/g;
 		if((length($read)>49) && (length($read2))>49){

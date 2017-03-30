@@ -21,7 +21,8 @@ while(<MAP>){
 }
 
 close MAP;
-my $first_print;
+
+print "locus\tchromosome\tposition";
 open SNP, $snp;
 while(<SNP>){
 	chomp;
@@ -30,9 +31,10 @@ while(<SNP>){
 	if ($. == 1){next;}
 	my @a = split(/\t/,$line);
 	my $chrom = $a[0];
+	my $bp = $a[1];
+	my $loci = "${chrom}_${bp}";
 	$chrom =~ s/Ha//;
 	$chrom = sprintf("%02d", $chrom);
-	my $bp = $a[1];
 	my $previous_site;
 	my $before_site;
 	my $after_site;
@@ -59,10 +61,5 @@ while(<SNP>){
 	$loci_cM = ($percent_of_range * $cM_range) + $hash{$chrom}{$before_site};
 	
 	BADSITE:
-	if ($first_print){
-		print "\n";
-	}else{
-		$first_print++;
-	}
-	print "$chrom\t.\t$loci_cM\t$bp";
+	print "\n$loci\t$chrom\t$loci_cM";
 }

@@ -11,8 +11,8 @@ cat ${name}.tab | perl $reformat/SNPtable2hmp.pl > ${name}.hmp
 
 $tassel/run_pipeline.pl -fork1 -h ${name}.hmp -export $name -exportType Plink -runfork1
 
-#$plink/plink --file ${name}.plk --out ${name}.plk --make-bed --noweb
-$plink/plink --file ${name}.plk --out ${name}.plk --transpose --noweb --recode
+$plink/plink --file ${name}.plk --out ${name}.plk --make-bed --noweb
+#$plink/plink --file ${name}.plk --out ${name}.plk --transpose --noweb --recode
 rm ${name}.hmp
 #rm ${name}.plk.map
 #rm ${name}.plk.ped

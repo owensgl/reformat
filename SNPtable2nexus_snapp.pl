@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-
+#This reformates to nex format for snapp. It also has a feature built in where it only outputs the first X of each species. Change this if you want to print all.
 use warnings;
 use strict;
 use lib '/home/owens/bin/pop_gen/'; #For GObox server
@@ -24,12 +24,20 @@ $f{"GC"} = "CG";
 $f{"TC"} = "CT";
 $f{"TG"} = "GT";
 
-my $in = $ARGV[0]; #Infile SNP table
+my $popfile = $ARGV[0]; #Sample name and species. It appends species to sample name
+my $max_per_species = 4;
 
-
-require "countbadcolumns.pl";
-my ($iupac_coding, $badcolumns) = count_bad_columns($in);
-$. = 0;
+my %species;
+my %species_count;
+open POP, $popfile;
+while(<POP>){
+	chomp;
+	my @a = split(/\t/,$_);
+	$species_count{$a[1]}++;
+	if($species_count{$a[1]} > $max_per_species){next;}
+	$species{$a[0]} = $a[1];
+	
+}
 
 
 my $locicount;
@@ -38,40 +46,39 @@ my %samples;
 my @samplelist;
 my $loci_count;
 
-open IN, $in;
-while (<IN>){
+while (<STDIN>){
 	chomp;
 	my @a = split (/\t/,$_);
   	if ($. == 1 ){
-    	foreach my $i ($badcolumns..$#a){
-            $samples{$i}=$a[$i];
-            push(@samplelist,$a[$i]);
+    	foreach my $i (2..$#a){
+	    if ($species{$a[$i]}){
+            	$samples{$i}=$a[$i];
+            	push(@samplelist,$a[$i]);
+	    }
         }
 	}else{
 		next if /^\s*$/;
 		$loci_count++;
 		my %total_alleles;
-		foreach my $i ($badcolumns..$#a){
-            if ($iupac_coding eq "TRUE"){
-                $a[$i] = $t{$a[$i]};
-            }
+		foreach my $i (2..$#a){
 			if ($f{$a[$i]}){ #Flip alleles so they're in alphabetical order
 				$a[$i] = $f{$a[$i]};
 			}
 			unless (($a[$i] eq "NN")or($a[$i] eq "XX")){
 				my @strands = split(//, $a[$i]);
 				$total_alleles{$strands[0]}++;
-                $total_alleles{$strands[1]}++;
+                		$total_alleles{$strands[1]}++;
 			}
 		}
 		my @bases = sort { $total_alleles{$a} <=> $total_alleles{$b} } keys %total_alleles ;
 		my $major_allele = $bases[1];
 		my $minor_allele = $bases[0];
-		foreach my $i ($badcolumns..$#a){
+		foreach my $i (2..$#a){
+			unless($samples{$i}){next;}
 			my $majorcount = 0;
 			my @strands = split(//, $a[$i]);
 			if ($a[$i] eq "NN"){
-				$snp_hash{$samples{$i}}{$loci_count} = "??";
+				$snp_hash{$samples{$i}}{$loci_count} = "?";
 				next;
 			}
 			foreach my $base (@strands){
@@ -91,35 +98,33 @@ while (<IN>){
 }
 my $n_snps = ($loci_count);
 my $n_samples = ($#samplelist+1);
-print "#nexus\n\n";
-print "BEGIN Taxa;\n";
-print "DIMENSIONS ntax=$n_samples;\n";
-print "TAXLABELS\n";
-my $samplecounter = 0;
-foreach my $samplename(@samplelist){
-	$samplecounter++;
-	print "[$samplecounter] \'$samplename\'\n";
-}
-print ";\nEND;[Taxa]\n\n";
+print "#NEXUS\n\n";
+#print "BEGIN Taxa;\n";
+#print "DIMENSIONS ntax=$n_samples;\n";
+#print "TAXLABELS\n";
+#my $samplecounter = 0;
+#foreach my $samplename(@samplelist){
+#	unless($species{$samplename}){next;}
+#	$samplecounter++;
+#	print "[$samplecounter] \'$species{$samplename}_$samplename\'\n";
+#}
+#print ";\nEND;[Taxa]\n\n";
 
-print "BEGIN Characters;\n";
-print "DIMENSIONS nchar=$n_snps;\n";
-print "FORMAT\n";
-print "\tdatatype=STANDARD\n";
-print "\tmissing=?\n";
-print "\tgap=-\n";
-print "\tsymbols=\"01\"\n";
-print "\tlabels=left\n";
-print "\ttranspose=no\n";
-print "\tinterleave=no\n";
-print ";\n";
-print "MATRIX\n";
+print "Begin data;\n";
+print "\tDimensions ntax=$n_samples nchar=$n_snps;\n";
+print "\tFormat";
+print " datatype=integerdata";
+print " missing=?";
+print " gap=-";
+print " symbols=\"012\";\n";
+print "\tMatrix\n";
 foreach my $samplename(@samplelist){
-	print "\'$samplename\' ";
+	unless($species{$samplename}){next;}
+	print "$species{$samplename}_$samplename ";
 	foreach my $snpnumber (1..$loci_count){
 		print "$snp_hash{$samplename}{$snpnumber}";
 	}
 	print "\n";
 }
-print ";\n";
+print "\t;\n";
 print "End;";

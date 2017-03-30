@@ -3,7 +3,7 @@ use warnings;
 use strict;
 
 #This script reduces a snp table to one snp every 1000 bp at max.
-my $dist = 1000; #Minimum distance between SNPs
+my $dist = 1000000; #Minimum distance between SNPs
 
 my $previous_chr;
 my $previous_pos;
