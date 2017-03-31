@@ -10,6 +10,7 @@ unless (@ARGV == 4) {
 	print "usage perl GBS_fastq_Demultiplexer_vX.pl barcodes.txt R1.fastq R2.fastq thenameIwantStuckonEveryfile\n";
 	die;
 }
+my $delete_cutsite = "TRUE"; #Set to false if you don't want to delete the cutsites (which are real but can't be variable).
 my $bar = $ARGV[0];
 my $fastq_1 = $ARGV[1];
 my $fastq_2 = $ARGV[2];
@@ -124,6 +125,8 @@ while (my $seq1 = <FAST1>){
 		my $bar_number;
 		my $bc1seq;
 		my $bc2seq;
+		my $bc1seq_real; #The observed barcode sequenced include possible errors
+		my $bc2seq_real;
 		my $singlebarcode;
 #		print STDERR "For this read:";
 		foreach my $i (4..9){ #Check both reads to find sample identity
@@ -135,6 +138,7 @@ while (my $seq1 = <FAST1>){
 					if ($bar1_permutations{$sample}{$bc}){
 						$bar1_number{$sample}++;
 						$bc1seq = $bar1{$sample};
+						$bc1seq_real = $bc;
 #						print STDERR " BC1=$sample";
 						if ($bar2{$sample}){
 							my $j = length($bar2{$sample}); #If you found the barcode on read one, check if the match is on read two.
@@ -145,6 +149,7 @@ while (my $seq1 = <FAST1>){
 									#my $re_site = substr($tmp2,($j),length($read2_enzyme));
 									$bar2_number{$sample}++;
 	        	                       	                 	$bc2seq = $bar2{$sample};
+									$bc2seq_real = $bc2;
 									goto MOVEON;
 								}
 							}
@@ -166,16 +171,29 @@ while (my $seq1 = <FAST1>){
 		}
 		if ($bar_number){
 			unless($singlebarcode){
-				$read =~ s/$bc1seq//; #Pull off barcode 1
-				$read2 =~ s/$bc2seq//; #Pull off barcode 2
-				my $l1 = length($bc1seq);
+				$read =~ s/$bc1seq_real//; #Pull off barcode 1
+				$read2 =~ s/$bc2seq_real//; #Pull off barcode 2
+				my $l1 = length($bc1seq_real);
 				$qual = substr($read_info{"R1"}{"qual"},$l1);
-				my $l2 = length($bc2seq);
+				my $l2 = length($bc2seq_real);
 				$qual2 = substr($read_info{"R2"}{"qual"},$l2);
+				if ($delete_cutsite eq "TRUE"){
+					$read = substr($read, length($read1_enzyme));
+					$read2 = substr($read2, length($read2_enzyme));
+					$qual = substr($qual, length($read1_enzyme));
+					$qual2 = substr($qual2, length($read2_enzyme));
+				}
 			}else{
-				$read =~ s/$bc1seq//; #Pull off barcode 1
-				my $l1 = length($bc1seq);
+				$read =~ s/$bc1seq_real//; #Pull off barcode 1
+				my $l1 = length($bc1seq_real);
                                 $qual = substr($read_info{"R1"}{"qual"},$l1);
+				if ($delete_cutsite eq "TRUE"){
+					$read = substr($read, length($read1_enzyme));
+					$read2 = substr($read2, length($read2_enzyme));
+					$qual = substr($qual, length($read1_enzyme));
+					$qual2 = substr($qual2, length($read2_enzyme));
+				}
+
 			}
 		}else{
 			$bar_number = "nobar";
