@@ -16,7 +16,7 @@ while (<STDIN>){
   next if /^#/;
   my @a = split(/\t/,$_);
   my $type = $a[2];
-  if (($type eq "similarity") or ($type = "repeat_region")){
+  if (($type eq "similarity") or ($type eq "repeat_region")){
     #Load in info
     my $start = $a[3];
     my $end = $a[4];
@@ -40,7 +40,9 @@ while (<STDIN>){
       #If the next repeat overlaps with the end of the last repeat
       if ($start <= $current_start){
         #Combine the exclusion window
-        $current_start = ($end);
+	if ($end > $current_start){
+	        $current_start = ($end);
+	}
       }else{
         #If the next repeat does not overlap, then print out an interval between the repeats.
         $current_end = ($start);

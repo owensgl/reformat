@@ -37,14 +37,14 @@ foreach my $i (1..21){
 
 while(<STDIN>){
   chomp;
-  my @a = split(/\t/,$_);
-  if ($. == 1){
-    print "CHROM\tPOS\tCM";
-    foreach my $i (3..$#a){
-      print "\t$a[$i]";
-    }
+  if ($_ =~ m/^##/){
+    print "$_\n";
     next;
+  }elsif($_ =~ m/^#/){
+    print "#CONVERTED FROM BROAD TO ROESTI POSITION. ID IS NOW CM\n";
+    print "$_";next;
   }
+  my @a = split(/\t/,$_);
   my $tmp = $a[0];
   $tmp =~ s/group//;
   my $chr = &arabic($tmp);
@@ -86,8 +86,7 @@ while(<STDIN>){
   }
   PRINTOUT:
   if ($new_pos){
-    print "\n$new_chr-$new_pos";
-    print "\t$new_chr\t$new_pos\t$new_cm";
+    print "\n$new_chr\t$new_pos\t$new_cm";
     foreach my $i (3..$#a){
       print "\t$a[$i]";
     }
