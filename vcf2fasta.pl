@@ -1,9 +1,8 @@
 #!/bin/perl
-#This script takes a vcf file phased by beagle, and outputs a vcf, by windows
+#This script takes a vcf file and outputs a fasta.
 use strict;
 use warnings;
 
-my $tag = $ARGV[0]; #Thing to stick on fasta names
 
 my(%table) = (
         'AC' => 'M',

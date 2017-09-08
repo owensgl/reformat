@@ -23,16 +23,27 @@ while(<STDIN>){
    foreach my $i (9..$#fields){
     if ($fields[$i] ne '.'){
      my @info = split(/:/,$fields[$i]);
+     my $state = "homo";
+     if ($info[0] eq "0/1"){
+       $state = "het";
+     }
 #     unless($info[0] eq "0/1"){next};
-     if ($info[1]){
-       my $dp = $info[1];
-       $total{$dp}++;
+     if ($info[2]){
+       my $depth = $info[1];
+       my @dp = split(/,/,$info[2]);
+       if (($dp[0] eq 1) or ($dp[1] eq 1)){
+         $total{$depth}{$state}++;
+       }
      }
     }
    }
   }
 }
-print "depth\tcount";
+print "depth\tpercent_het";
 foreach my $depth (sort {$a <=> $b} keys %total){
-  print "\n$depth\t$total{$depth}";
+  unless($total{$depth}{'het'}){
+    $total{$depth}{'het'} = 0;
+  }
+  my $percent = $total{$depth}{'het'} / ($total{$depth}{'homo'} + $total{$depth}{'het'});
+  print "\n$depth\t$percent";
 }

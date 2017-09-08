@@ -13,7 +13,7 @@ while(<STDIN>){
   }elsif ($line=~m/^#/){
     print "$line";
   }else{
-    if ($counter > 50000){goto ENDSCRIPT;}
+    if ($counter > 500000){goto ENDSCRIPT;}
     my $chr = $fields[0];
     my $pos = $fields[1];
     my $alt = $fields[4];
