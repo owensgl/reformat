@@ -2,9 +2,9 @@
 
 use warnings;
 use strict;
+#USAGE: cat file.vcf | perl THISSCRIPT.pl map.txt > newfile.vcf
+my $map = $ARGV[0]; #In this, the chr is second col, cm is third and bp is fourth.
 
-my $map = $ARGV[0]; #lg.ALL.bronze14.path.txt
-#my $snp = $ARGV[1]; #SNP file in hmp format
 #SNPfile piped in
 my $tmp;
 my %hash;
