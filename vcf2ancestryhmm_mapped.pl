@@ -10,7 +10,7 @@ my $output = $ARGV[1]; #The prefix of your output file
 #Options:
 my $remove_indels = "TRUE";
 my $print_empty_sites = "FALSE"; #if TRUE, will print sites where the admixed sample has no reads (but reference populations do). This will keep all sites consistent between samples.
-my $min_ref_size = "10"; #minimum number of individuals genotyped in each reference set.
+my $min_ref_size = "2"; #minimum number of individuals genotyped in each reference set.
 my $min_ref_dif = "0.20"; #Minimum allele frequency difference between the reference populations to keep a site. Set to 0 for no filtering.
 #####
 

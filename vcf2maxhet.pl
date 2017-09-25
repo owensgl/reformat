@@ -11,7 +11,7 @@ my $maxhet = $ARGV[0];
 
 my $goodlines = 0;
 my $cutlines = 0;
-
+my $emptylines = 0;
 while (<STDIN>){
   chomp;
   my $line = $_;
@@ -42,8 +42,8 @@ while (<STDIN>){
       my $total = $homo + $het;
       if ($total == 0){
         print STDERR "Cut $a[0]_$a[1] because no data\n";
+	$emptylines++;
         next;
-        $cutlines++;
       }
       my $hetperc = $het / $total;
       if ($hetperc < $maxhet){
@@ -58,4 +58,6 @@ while (<STDIN>){
   }
 }
 
-print STDERR "There were $goodlines printed sites and $cutlines cut sites.\n"
+print STDERR "$goodlines printed sites.\n";
+print STDERR "$cutlines cut due to heterozygosity.\n";
+print STDERR "$emptylines cut due to no data.";

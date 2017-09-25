@@ -64,7 +64,7 @@ foreach my $s (@samples){
 	if ($pop){
 		if ($pop{$s}){
 			print OUT "$s\t$pop{$s}";
-			if ($pop{$s} eq "6"){
+			if (($pop{$s} >=5)){
 				print OUT "\t0";
 			}else{
 				print OUT "\t1";
@@ -74,7 +74,7 @@ foreach my $s (@samples){
 			}
 			print OUT "\n";
 			print OUT "$s\t$pop{$s}";
-			if ($pop{$s} eq "6"){
+			if (($pop{$s} >= 5)){
 				print OUT "\t0";
 			}else{
 				print OUT "\t1";
