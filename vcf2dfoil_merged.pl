@@ -2,7 +2,6 @@
 use warnings;
 
 my $infofile = $ARGV[0];
-my $suffix = $ARGV[1];
 my $min_dp = 3;
 
 open INFO, $infofile;
