@@ -5,7 +5,6 @@ use warnings;
 #This file outputs to tped format, with plink -recode 12 coding. Only outputs biallelic sites
 my $outprefix = $ARGV[0];
 my $convert_chr = "TRUE"; #Set to TRUE to convert chromosomes to numeric and filter out non-number chromosomes. This is only set for the HanXRQChr prefix of the XRQ sunflower genome.
-my $min_depth = "5"; #Minimum reads to output a genotype. Otherwise as missing data.
 open(my $tped, '>', "$outprefix.tped");
 open(my $tfam, '>', "$outprefix.tfam");
 my $first;
@@ -61,10 +60,6 @@ while(<STDIN>){
      my @info = split(/:/,$fields[$i]);
      my $call = $info[0];
      my $dp = $info[1];
-     if ($dp < $min_depth){
-      $genotype = "00";
-      next;
-     }
      my @bases = split(/\//,$call);
      foreach my $j (0..1){
       if ($bases[$j] eq "0"){

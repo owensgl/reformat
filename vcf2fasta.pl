@@ -2,7 +2,7 @@
 #This script takes a vcf file and outputs a fasta.
 use strict;
 use warnings;
-
+my $IUPAC = "FALSE";
 
 my(%table) = (
         'AC' => 'M',
@@ -54,8 +54,14 @@ while(<STDIN>){
 	}
        
       }
-      my $code = $table{$current_call};
-      $sites{$ind{$i}} .= $code;
+      if ($IUPAC eq "TRUE"){
+        my $code = $table{$current_call};
+        $sites{$ind{$i}} .= $code;
+      }else{
+        my @calls = split(//,$current_call);
+        my $rand = int(rand(2));
+	$sites{$ind{$i}} .= $calls[$rand];
+      }
     }
   }
 }

@@ -24,7 +24,7 @@ print STDERR "Reading in VCF file...\n";
 
 my $currentchrom;
 my %samplehash;
-my $min_depth = 5; #minimum number of reads to call a site.
+my $min_depth = 1; #minimum number of reads to call a site.
 my $n_inds;
 my $n_snps;
 my $snpcount;
@@ -105,4 +105,27 @@ while(<VCF>) {
 	}
 	SKIP:
 }
+                        print STDERR "Printing out $currentchrom...\n";
+                        $n_snps = $snpcount;
+                        open(OUTPUT, ">$output.$currentchrom.fphase.in");
+                        open(LIST, ">$output.$currentchrom.locilist.txt");
+                        print OUTPUT "$n_inds\n$n_snps\n";
+                        if ($Pline eq "TRUE"){
+                                print OUTPUT "P";
+                                foreach my $site (@site_list){
+                                        print OUTPUT"\t$site";
+                                        print LIST "$site\n";
+                                }
+                                print OUTPUT "\n";
+                        }
+                        foreach my $samplename(@samplenames){
+                                print OUTPUT "# $samplename\n";
+                                foreach my $i (0..1){
+                                        foreach my $site (@site_list){
+                                                my @tmp = split (//, $snphash{$site}{$samplename});
+                                                print OUTPUT "$tmp[$i]";
+                                        }print OUTPUT "\n";
+                                }
+                        }
+
 

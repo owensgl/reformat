@@ -41,7 +41,7 @@ while (<STDIN>){
       }
       my $total = $homo + $het;
       if ($total == 0){
-        print STDERR "Cut $a[0]_$a[1] because no data\n";
+#        print STDERR "Cut $a[0]_$a[1] because no data\n";
 	$emptylines++;
         next;
       }
@@ -51,7 +51,7 @@ while (<STDIN>){
         $goodlines++;
       }
       else{
-        print STDERR "Cut $a[0]_$a[1] because Het observed = $hetperc\n";
+ #       print STDERR "Cut $a[0]_$a[1] because Het observed = $hetperc\n";
         $cutlines++;
       }
     }
