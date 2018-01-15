@@ -14,7 +14,7 @@ while(<STDIN>){
   my $pos = $a[1];
   if ($first_line){
     print "\n";
-  else{
+  }else{
     $first_line++;
   }
   print "$chr\t${chr}_$pos\t0\t$pos";
