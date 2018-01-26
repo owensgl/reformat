@@ -339,5 +339,6 @@ foreach my $file (keys %ph){
     open OUT, ">>$file";
     foreach my $read (@{$ph{$file}}){
         print OUT "$read";
+    close OUT;
     }
 }
