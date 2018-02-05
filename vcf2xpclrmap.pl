@@ -2,7 +2,7 @@
 
 use warnings;
 use strict;
-#USAGE: cat file.vcf | perl THISSCRIPT.pl map.txt > newfile.vcf
+#USAGE: cat file.vcf | perl THISSCRIPT.pl map.txt > newfile.input
 my $map = $ARGV[0]; #In this, the chr is first col, bp is second, cm is third.
 #/home/owens/ref/HanXRQr1.0-20151230.bp_to_cM.280x801.extradivisions.txt
 
