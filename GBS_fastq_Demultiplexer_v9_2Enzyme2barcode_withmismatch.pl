@@ -86,14 +86,14 @@ while (<IN>){
 }
 if ($print_mates){
 	if (-e "$out"."nobar_R1.fastq") {
-		system  ("$out"."nobar_R1.fastq");
+		system  ("rm $out"."nobar_R1.fastq");
 	}
 	if (-e "$out"."nobar_R2.fastq") {
-		system  ("$out"."nobar_R2.fastq");
+		system  ("rm $out"."nobar_R2.fastq");
 	}
 }else{
 	if (-e "$out"."nobar.fastq") {
-		system  ("$out"."nobar.fastq");
+		system  ("rm $out"."nobar.fastq");
 	}
 }
 close IN;
