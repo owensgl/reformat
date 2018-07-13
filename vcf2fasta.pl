@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 my $IUPAC = "FALSE";
-
+my $missing_character = "?"; #Normally N, but ? for splitstree
 my(%table) = (
         'AC' => 'M',
         'CA' => 'M',
@@ -50,7 +50,7 @@ while(<STDIN>){
         }elsif($bases[$j] eq "1"){
           $current_call .= $alt;
         }elsif($bases[$j] eq '.'){
-	  $current_call .= "N";
+	  $current_call .= "?";
 	}
        
       }

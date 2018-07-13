@@ -60,7 +60,12 @@ while(<STDIN>){
      my @info = split(/:/,$fields[$i]);
      my $call = $info[0];
      my $dp = $info[1];
-     my @bases = split(/\//,$call);
+     my @bases;
+     if ($call =~ m/\//){
+      @bases =split(/\//,$call);
+     }elsif ($call =~ m/\|/){
+      @bases=split(/\|/,$call);
+     }
      foreach my $j (0..1){
       if ($bases[$j] eq "0"){
        #$genotype .= $ref;

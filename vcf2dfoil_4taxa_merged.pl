@@ -1,9 +1,9 @@
 #!/bin/perl
 use warnings;
-
+use POSIX;
 my $infofile = $ARGV[0];
 my $min_dp = 3;
-
+my $window_size = 1000000;
 open INFO, $infofile;
 
 my %group;
@@ -20,6 +20,7 @@ my @patterns = qw(AAAA AABA ABAA ABBA BAAA BABA BBAA BBBA);
 close INFO;
 my %name;
 my $counter =0;
+my %output;
 while(<STDIN>){
   chomp;
   my $line = $_;
@@ -35,6 +36,7 @@ while(<STDIN>){
     my $pos = $a[1];
     my $ref = $a[3];
     my $alt = $a[4];
+    my $window = floor($pos/$window_size);
     if((length($alt) > 1) or (length($ref) > 1)){
       next;
     }
@@ -91,14 +93,20 @@ while(<STDIN>){
       }
       $pattern .= $code;
     }
-    print "\n$chr\t$pos";
+    $output{$chr}{$window}{$pattern}++;
+  SKIPLINE:
+  }
+}
+foreach my $chr (sort keys %output){
+  foreach my $window (sort keys %{$output{$chr}}){
+    my $window_start = $window * $window_size;
+    print "\n$chr\t$window_start";
     foreach my $possible_pattern (@patterns){
-      if ($possible_pattern eq $pattern){
-        print "\t1";
+      if ($output{$chr}{$window}{$possible_pattern}){
+        print "\t$output{$chr}{$window}{$possible_pattern}";
       }else{
         print "\t0";
       }
     }
-  SKIPLINE:
   }
 }
