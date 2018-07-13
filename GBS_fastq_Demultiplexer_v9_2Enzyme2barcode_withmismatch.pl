@@ -84,7 +84,18 @@ while (<IN>){
 		}
 	}
 }
-system  ("rm $out"."nobar*.fastq");
+if ($print_mates){
+	if (-e "$out"."nobar_R1.fastq") {
+		system  ("$out"."nobar_R1.fastq");
+	}
+	if (-e "$out"."nobar_R2.fastq") {
+		system  ("$out"."nobar_R2.fastq");
+	}
+}else{
+	if (-e "$out"."nobar.fastq") {
+		system  ("$out"."nobar.fastq");
+	}
+}
 close IN;
 my @samples = sort keys %bar1;
 unless($fastq_1 =~ /\.gz$/){
