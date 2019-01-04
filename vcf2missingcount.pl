@@ -21,7 +21,7 @@ while(<STDIN>){
         $missing{$samples{$i}}++;
       }else{
         my @fields = split(/\t/,$a[$i]);
-        if ($fields[0] eq './.'){
+        if ($fields[$i] eq './.'){
           $missing{$samples{$i}}++;
         }else{
           $present{$samples{$i}}++;
