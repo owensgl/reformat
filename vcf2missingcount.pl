@@ -39,5 +39,5 @@ foreach my $i (sort keys %samples){
     $present{$samples{$i}} = 0;
   }
   my $percent = $missing{$samples{$i}} / ($missing{$samples{$i}} +$present{$samples{$i}});
-  print "\n$sample{$i}\t$present{$samples{$i}}\t$missing{$samples{$i}}\t$percent";
+  print "\n$samples{$i}\t$present{$samples{$i}}\t$missing{$samples{$i}}\t$percent";
 }
