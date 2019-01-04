@@ -20,8 +20,8 @@ while(<STDIN>){
       if ($a[0] eq '.'){
         $missing{$samples{$i}}++;
       }else{
-        my @fields = split(/\t/,$a[$i]);
-        if ($fields[$i] eq './.'){
+        my @fields = split(/:/,$a[$i]);
+        if ($fields[0] eq './.'){
           $missing{$samples{$i}}++;
         }else{
           $present{$samples{$i}}++;
