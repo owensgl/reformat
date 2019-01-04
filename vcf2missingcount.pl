@@ -13,7 +13,7 @@ while(<STDIN>){
   my @a = split(/\t/,$_);
   if ($_ =~ m/^#/){
     foreach my $i (9..$#a){
-      $samples{$i} = $a[0];
+      $samples{$i} = $a[$i];
     }
   }else{
     foreach my $i (9..$#a){
