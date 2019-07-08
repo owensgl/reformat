@@ -3,7 +3,7 @@ use warnings;
 use POSIX;
 my $infofile = $ARGV[0];
 my $min_dp = 3;
-my $window_size = 1000000;
+my $window_size = 100000;
 open INFO, $infofile;
 
 my %group;

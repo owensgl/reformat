@@ -5,6 +5,7 @@ use warnings;
 #This file outputs to tped format, with plink -recode 12 coding. Only outputs biallelic sites
 my $outprefix = $ARGV[0];
 my $convert_chr = "TRUE"; #Set to TRUE to convert chromosomes to numeric and filter out non-number chromosomes. This is only set for the HanXRQChr prefix of the XRQ sunflower genome.
+my $chr_prefix = "Ha412HOChr";
 open(my $tped, '>', "$outprefix.tped");
 open(my $tfam, '>', "$outprefix.tfam");
 my $first;
@@ -18,7 +19,7 @@ while(<STDIN>){
   if ($line =~m/^#CHROM/){
    my $first_line;
    foreach my $i (9..$#fields){
-    my $fam = "1";
+    my $fam = "$fields[$i]";
     my $ID = $fields[$i];
     my $father = "0";
     my $mother = "0";
@@ -35,7 +36,7 @@ while(<STDIN>){
   else{
    my $chr = $fields[0];
    if ($convert_chr){
-    $chr =~ s/HanXRQChr//;
+    $chr =~ s/$chr_prefix//;
     if (($chr =~ m/MT/) or ($chr =~ m/CP/) or ($chr =~ m/00/)){next;}
    }
  

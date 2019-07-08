@@ -5,7 +5,7 @@ use warnings;
 my $popfile = $ARGV[0];
 my $count = 1;
 my $subset = "TRUE";
-my $subset_value = 10; #Print every nth line;
+my $subset_value = 100; #Print every nth line;
 my %info;
 open POP, $popfile;
 my %groups;
@@ -45,7 +45,7 @@ while(<STDIN>){
       if ($count % $subset_value != 0){next;}
     }
     if ($count % 10000 == 0){
-      print STDERR "Printing $chr $pos...\n";
+      print STDERR "Loading $chr $pos...\n";
     }
     push (@sitelist,"$chr.$pos");
     foreach my $i (9..$#a){
