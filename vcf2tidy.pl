@@ -3,7 +3,7 @@ use warnings;
 use strict;
 
 #This takes a VCF and outputs  a tidy output of genotypes. It does not output missing data. It also flattens all alternate alleles, so its basically just counting the number of non-reference alleles.
-
+print "chr\tpos\tsample\talt_count";
 my %samples;
 while(<STDIN>){
 	chomp;
