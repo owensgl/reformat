@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 
+#usage: cat myfile.vcf | perl vcf2numeric_chr.pl chromosome_keyfile.txt > myfile.numericchrs.vcf
 my $key_file = $ARGV[0];
 
 my %chr_hash;
