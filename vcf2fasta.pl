@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 my $IUPAC = "FALSE";
-my $missing_character = "?"; #Normally N, but ? for splitstree
+my $missing_character = "N"; 
 my(%table) = (
         'AC' => 'M',
         'CA' => 'M',
