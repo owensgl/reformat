@@ -50,7 +50,7 @@ while(<STDIN>){
         }elsif($bases[$j] eq "1"){
           $current_call .= $alt;
         }elsif($bases[$j] eq '.'){
-	  $current_call .= "?";
+	  $current_call .= "N";
 	}
        
       }
