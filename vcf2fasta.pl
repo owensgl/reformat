@@ -42,7 +42,7 @@ while(<STDIN>){
     foreach my $i(9..$#a){
       my @tmp = split(/:/,$a[$i]);
       my $call = $tmp[0];
-      my @bases = split(/\//,$call);
+      my @bases = split(/[\/|]/,$call);
       my $current_call;
       foreach my $j (0..1){
         if ($bases[$j] eq "0"){
