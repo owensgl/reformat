@@ -26,6 +26,7 @@ my(%table) = (
 
 my %ind;
 my %sites;
+my $removed_sites;
 while(<STDIN>){
   chomp;
   if ($_ =~ m/^##/){next;}
