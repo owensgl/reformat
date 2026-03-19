@@ -35,6 +35,30 @@ while(<STDIN>){
       $ind{$i} = $a[$i];
     }
   }else{
+  # --- UPDATED FILTER LOGIC ---
+    my $has_hom_ref = 0;
+    my $has_hom_alt = 0;
+
+    # Scan all individuals to see if we have both homozygous types
+    foreach my $i (9..$#a) {
+      my @tmp = split(/:/, $a[$i]);
+      my $call = $tmp[0];
+      my @gt = split(/[\/|]/, $call);
+      
+      # We check for 0/0 and 1/1 specifically
+      if ($gt[0] eq '0' && $gt[1] eq '0') { $has_hom_ref = 1; }
+      if ($gt[0] eq '1' && $gt[1] eq '1') { $has_hom_alt = 1; }
+      
+      # Optimization: If we've found both, we can stop checking this row
+      last if ($has_hom_ref && $has_hom_alt);
+    }
+
+    # If the site doesn't meet BOTH criteria, skip it
+    unless ($has_hom_ref && $has_hom_alt) {
+      $removed_sites++;
+      next;
+    }
+    # --- END FILTER LOGIC ---
     my $chr = $a[0];
     my $pos = $a[1];
     my $ref = $a[3];
@@ -66,6 +90,9 @@ while(<STDIN>){
   }
 }
 &print_fasta;
+
+# Final count to stderr
+print STDERR "Total sites removed (missing 0/0 or 1/1): $removed_sites\n";
 
 sub print_fasta {
   my @a = sort values %ind;
